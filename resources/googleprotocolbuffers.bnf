@@ -86,7 +86,7 @@ rpc = "rpc" space rpcName space "(" [ "stream" ] messageType ")" space "returns"
 messageType ")" (( "{" {option | emptyStatement } "}" ) | ";")
 
 
-proto = syntax { import | package | option | topLevelDef | emptyStatement }
+proto = syntax optional-space { (import | package | option | topLevelDef | emptyStatement) optional-space }
 topLevelDef = message | enum | service
 
 
