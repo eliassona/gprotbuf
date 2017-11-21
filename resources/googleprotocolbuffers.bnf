@@ -28,11 +28,11 @@ exponent  = ( "e" | "E" ) [ "+" | "-" ] decimals
 boolLit = "true" | "false" 
 
 
-strLit = ( "\'" { charValue } "\'" ) |  ( '\"' { charValue } '\"' ) 
-charValue = hexEscape | octEscape | charEscape (* | #'[^\0\n\\]' *) 
-hexEscape = '\\' ( "x" | "X" ) hexDigit hexDigit   
-octEscape = '\\' octalDigit octalDigit octalDigit
-charEscape = '\\' ( "a" | "b" | "f" | "n" | "r" | "t" | "v" | '\\' | "\'" | '\"' ) 
+strLit = ( <"\'"> { charValue } <"\'"> ) |  ( <'\"'> { charValue } <'\"'> ) 
+charValue = hexEscape | octEscape | charEscape  | #"[^\\0\n]"
+hexEscape = <'\\'> ( "x" | "X" ) hexDigit hexDigit   
+octEscape = <'\\'> octalDigit octalDigit octalDigit
+charEscape = <'\\'> ( "a" | "b" | "f" | "n" | "r" | "t" | "v" | '\\' | "\'" | '\"' ) 
 quote = "\'" | '\"'
 
 emptyStatement = ";"
@@ -41,12 +41,12 @@ constant = fullIdent | ( [ "-" | "+" ] intLit ) | ( [ "-" | "+" ] floatLit ) | s
 
 syntax = "syntax" "=" quote "proto3" quote ";"
 
-import = "import" [ "weak" | "public" ] strLit ";" 
+import = "import" space [ ("weak" | "public") space ] strLit optional-space <";"> 
 
-package = "package" fullIdent ";"
+package = "package" space fullIdent optional-space ";"
 
 
-option = "option" optionName  "=" constant ";"
+option = "option" space optionName optional-space "=" optional-space constant ";"
 optionName = ( ident | "(" fullIdent ")" ) { "." ident }
 
 
@@ -55,13 +55,13 @@ type = "double" | "float" | "int32" | "int64" | "uint32" | "uint64"
       | "bool" | "string" | "bytes" | messageType | enumType
 fieldNumber = intLit;
 
-field = [ "repeated" ] type fieldName "=" fieldNumber [ "[" fieldOptions "]" ] ";"
+field = [ "repeated" space ] type space fieldName optional-space <"="> optional-space fieldNumber optional-space [ <"["> fieldOptions <"]"> ] ";"
 fieldOptions = fieldOption { ","  fieldOption }
 fieldOption = optionName "=" constant
 
 
-oneof = "oneof" oneofName "{" { oneofField | emptyStatement } "}"
-oneofField = type fieldName "=" fieldNumber [ "[" fieldOptions "]" ] ";"
+oneof = "oneof" space oneofName optional-space <"{"> { optional-space (oneofField | emptyStatement) optional-space } optional-space <"}">
+oneofField = type space fieldName optional-space <"="> optional-space fieldNumber [ <"["> fieldOptions <"]"> ] <";">
 
 mapField = "map" <"<"> optional-space keyType optional-space "," optional-space type optional-space <">"> space mapName optional-space <"="> optional-space fieldNumber [ "[" fieldOptions "]" ] ";"
 keyType = "int32" | "int64" | "uint32" | "uint64" | "sint32" | "sint64" |
@@ -79,8 +79,7 @@ enumField = ident "=" intLit [ "[" enumValueOption { ","  enumValueOption } "]" 
 enumValueOption = optionName "=" constant 
 
 message = "message" space messageName optional-space messageBody
-messageBody = "{" optional-space { field | enum | message | option | oneof | mapField |
-reserved | emptyStatement } optional-space "}"
+messageBody = <"{"> optional-space { (field | enum | message | option | oneof | mapField | reserved | emptyStatement) optional-space } optional-space <"}">
 
 service = "service" space serviceName space "{" space { option | rpc | emptyStatement space } optional-space "}"
 rpc = "rpc" space rpcName space "(" [ "stream" ] messageType ")" space "returns" space "(" [ "stream" ]
@@ -89,6 +88,9 @@ messageType ")" (( "{" {option | emptyStatement } "}" ) | ";")
 
 proto = syntax { import | package | option | topLevelDef | emptyStatement }
 topLevelDef = message | enum | service
+
+
+single-line-comment = '//' #'.'* new-line
 
 new-line = '\n' | Epsilon
 <space> = <#'[ \t\n,]+'>
