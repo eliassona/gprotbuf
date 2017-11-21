@@ -39,7 +39,7 @@ emptyStatement = ";"
 
 constant = fullIdent | ( [ "-" | "+" ] intLit ) | ( [ "-" | "+" ] floatLit ) | strLit | boolLit
 
-syntax = "syntax" "=" quote "proto3" quote ";"
+syntax = <"syntax"> optional-space <"="> optional-space quote "proto3" quote optional-space <";">
 
 import = "import" space [ ("weak" | "public") space ] strLit optional-space <";"> 
 
@@ -67,16 +67,16 @@ mapField = "map" <"<"> optional-space keyType optional-space "," optional-space 
 keyType = "int32" | "int64" | "uint32" | "uint64" | "sint32" | "sint64" |
           "fixed32" | "fixed64" | "sfixed32" | "sfixed64" | "bool" | "string"
           
-reserved = "reserved" ( ranges | fieldNames ) ";"
-ranges = range { "," range }
-range =  intLit [ "to" ( intLit | "max" ) ]
-fieldNames = fieldName { "," fieldName }     
+reserved = <"reserved"> space ( ranges | fieldNames ) optional-space <";">
+ranges = range optional-space {optional-space <","> optional-space  range}
+range =  intLit [ space "to" space ( intLit | "max" ) ]
+fieldNames = fieldName optional-space { <","> optional-space fieldName optional-space }     
 
 
-enum = "enum" enumName enumBody
-enumBody = "{" { option | enumField | emptyStatement } "}"
-enumField = ident "=" intLit [ "[" enumValueOption { ","  enumValueOption } "]" ]";"
-enumValueOption = optionName "=" constant 
+enum = <"enum"> space enumName optional-space enumBody
+enumBody = <"{"> optional-space { (option | enumField | emptyStatement) optional-space } <"}">
+enumField = ident optional-space <"="> optional-space intLit optional-space [ <"["> enumValueOption { <",">  enumValueOption } <"]"> ]";"
+enumValueOption = optionName optional-space <"="> optional-space constant 
 
 message = "message" space messageName optional-space messageBody
 messageBody = <"{"> optional-space { (field | enum | message | option | oneof | mapField | reserved | emptyStatement) optional-space } optional-space <"}">
