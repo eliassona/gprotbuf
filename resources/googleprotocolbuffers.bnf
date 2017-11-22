@@ -46,7 +46,7 @@ import = "import" space [ ("weak" | "public") space ] strLit optional-space <";"
 package = "package" space fullIdent optional-space ";"
 
 
-option = "option" space optionName optional-space "=" optional-space constant ";"
+option = "option" space optionName optional-space "=" optional-space constant optional-space ";"
 optionName = ( ident | "(" fullIdent ")" ) { "." ident }
 
 
@@ -75,7 +75,7 @@ fieldNames = fieldName optional-space { <","> optional-space fieldName optional-
 
 enum = <"enum"> space enumName optional-space enumBody
 enumBody = <"{"> optional-space { (option | enumField | emptyStatement) optional-space } <"}">
-enumField = ident optional-space <"="> optional-space intLit optional-space [ <"["> enumValueOption { <",">  enumValueOption } <"]"> ]";"
+enumField = ident optional-space <"="> optional-space intLit optional-space [ <"["> optional-space enumValueOption optional-space { <",">  optional-space enumValueOption optional-space } <"]"> ] optional-space <";">
 enumValueOption = optionName optional-space <"="> optional-space constant 
 
 message = "message" space messageName optional-space messageBody
@@ -86,7 +86,7 @@ rpc = "rpc" space rpcName space "(" [ "stream" ] messageType ")" space "returns"
 messageType ")" (( "{" {option | emptyStatement } "}" ) | ";")
 
 
-proto = syntax optional-space { (import | package | option | topLevelDef | emptyStatement) optional-space }
+proto = optional-space syntax optional-space { (import | package | option | topLevelDef | emptyStatement) optional-space }
 topLevelDef = message | enum | service
 
 

@@ -1,10 +1,8 @@
 (ns gprotbuf.core-test
   (:require [clojure.test :refer :all]
-            [gprotbuf.core :refer :all]))
-
-
-
-
+            [gprotbuf.core :refer :all]
+            [instaparse.core :as insta]
+            [clj-http.client :as client]))
 
 
 (deftest an-import
@@ -23,14 +21,8 @@
 }")
 
 
-(deftest a-one-of 
-  (is (= [:oneof "oneof" [:oneofName [:ident [:letter "f"] [:letter "o"] [:letter "o"]]] [:oneofField [:type [:enumType [:enumName [:ident [:letter "s"] [:letter "t"] [:letter "r"] [:letter "i"] [:letter "n"] [:letter "g"]]]]] [:fieldName [:ident [:letter "n"] [:letter "a"] [:letter "m"] [:letter "e"]]] [:fieldNumber [:intLit [:decimalLit "4"]]]] [:oneofField [:type [:enumType [:enumName [:ident [:letter "S"] [:letter "u"] [:letter "b"] [:letter "M"] [:letter "e"] [:letter "s"] [:letter "s"] [:letter "a"] [:letter "g"] [:letter "e"]]]]] [:fieldName [:ident [:letter "s"] [:letter "u"] [:letter "b"] "_" [:letter "m"] [:letter "e"] [:letter "s"] [:letter "s"] [:letter "a"] [:letter "g"] [:letter "e"]]] [:fieldNumber [:intLit [:decimalLit "9"]]]]] (parser one-of :start :oneof))))
-
-(deftest a-reserved
-  (is (= [:reserved [:ranges [:range [:intLit [:decimalLit "2"]]] [:range [:intLit [:decimalLit "1" [:decimalDigit "5"]]]] [:range [:intLit [:decimalLit "9"]] "to" [:intLit [:decimalLit "1" [:decimalDigit "1"]]]]]] 
-         (parser "reserved 2, 15, 9 to 11;" :start :reserved))))
-
-
+(deftest a-one-of (is (not (->  one-of (parser :start :oneof) insta/failure?))))
+(deftest a-reserved (is (not (->  "reserved 2, 15, 9 to 11;" (parser :start :reserved) insta/failure?))))
 
 (def enum "enum EnumAllowingAlias {
   option allow_alias = true;
@@ -39,9 +31,10 @@
   RUNNING = 2 [(custom_option) = \"hello world\"];
 }")
          
-(deftest an-enum
-  (is (= [:enum [:enumName [:ident [:letter "E"] [:letter "n"] [:letter "u"] [:letter "m"] [:letter "A"] [:letter "l"] [:letter "l"] [:letter "o"] [:letter "w"] [:letter "i"] [:letter "n"] [:letter "g"] [:letter "A"] [:letter "l"] [:letter "i"] [:letter "a"] [:letter "s"]]] [:enumBody [:option "option" [:optionName [:ident [:letter "a"] [:letter "l"] [:letter "l"] [:letter "o"] [:letter "w"] "_" [:letter "a"] [:letter "l"] [:letter "i"] [:letter "a"] [:letter "s"]]] "=" [:constant [:boolLit "true"]] ";"] [:enumField [:ident [:letter "U"] [:letter "N"] [:letter "K"] [:letter "N"] [:letter "O"] [:letter "W"] [:letter "N"]] [:intLit [:octalLit "0"]] ";"] [:enumField [:ident [:letter "S"] [:letter "T"] [:letter "A"] [:letter "R"] [:letter "T"] [:letter "E"] [:letter "D"]] [:intLit [:decimalLit "1"]] ";"] [:enumField [:ident [:letter "R"] [:letter "U"] [:letter "N"] [:letter "N"] [:letter "I"] [:letter "N"] [:letter "G"]] [:intLit [:decimalLit "2"]] [:enumValueOption [:optionName "(" [:fullIdent [:ident [:letter "c"] [:letter "u"] [:letter "s"] [:letter "t"] [:letter "o"] [:letter "m"] "_" [:letter "o"] [:letter "p"] [:letter "t"] [:letter "i"] [:letter "o"] [:letter "n"]]] ")"] [:constant [:strLit [:charValue "h"] [:charValue "e"] [:charValue "l"] [:charValue "l"] [:charValue "o"] [:charValue " "] [:charValue "w"] [:charValue "o"] [:charValue "r"] [:charValue "l"] [:charValue "d"]]]] ";"]]]
-         (parser enum :start :enum))))
+
+
+
+(deftest an-enum (is (not (-> enum (parser :start :enum) insta/failure?))))
        
 
 
@@ -94,7 +87,19 @@ message outer {
 
 
 (deftest a-proto-file 
-  (parser proto-file :start :proto))
+  (is (not (-> proto-file parse insta/failure?))))
 
 
- 
+(defn http-call [url]
+  (let [res (client/get url)]
+    (if (= (:status res) 200) 
+      (-> res :body)
+      (throw (IllegalStateException. (pr-str res))))))
+
+
+;;TODO add more examples to this list
+(def gpb-examples-urls ["https://raw.githubusercontent.com/google/protobuf/master/examples/addressbook.proto"])
+
+
+(deftest examples-from-internet 
+  (is (every? complement (map (comp insta/failure? parse http-call) gpb-examples-urls)))) 
