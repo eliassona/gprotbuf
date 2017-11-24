@@ -2,7 +2,8 @@
   (:require [clojure.test :refer :all]
             [gprotbuf.core :refer :all]
             [instaparse.core :as insta]
-            [clj-http.client :as client]))
+            [clj-http.client :as client])
+  )
 
 
 (deftest an-import
@@ -103,3 +104,5 @@ message outer {
 
 (deftest examples-from-internet 
   (is (every? complement (map (comp insta/failure? parse http-call) gpb-examples-urls)))) 
+
+

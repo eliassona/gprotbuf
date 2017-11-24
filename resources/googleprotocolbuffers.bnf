@@ -1,4 +1,4 @@
-letter 	     = #'[A-Za-z]'
+<letter> 	     = #'[A-Za-z]'
 decimalDigit = #'[0-9]'
 octalDigit   = #'[0-7]'
 hexDigit     = #'[0-9a-fA-F]'
@@ -63,7 +63,7 @@ fieldOption = optionName "=" constant
 oneof = "oneof" space oneofName optional-space <"{"> { optional-space (oneofField | emptyStatement) optional-space } optional-space <"}">
 oneofField = type space fieldName optional-space <"="> optional-space fieldNumber [ <"["> fieldOptions <"]"> ] <";">
 
-mapField = "map" <"<"> optional-space keyType optional-space "," optional-space type optional-space <">"> space mapName optional-space <"="> optional-space fieldNumber [ "[" fieldOptions "]" ] ";"
+mapField = <"map"> <"<"> optional-space keyType optional-space "," optional-space type optional-space <">"> space mapName optional-space <"="> optional-space fieldNumber [ "[" fieldOptions "]" ] ";"
 keyType = "int32" | "int64" | "uint32" | "uint64" | "sint32" | "sint64" |
           "fixed32" | "fixed64" | "sfixed32" | "sfixed64" | "bool" | "string"
           
@@ -78,7 +78,7 @@ enumBody = <"{"> optional-space { (option | enumField | emptyStatement) optional
 enumField = ident optional-space <"="> optional-space intLit optional-space [ <"["> optional-space enumValueOption optional-space { <",">  optional-space enumValueOption optional-space } <"]"> ] optional-space <";">
 enumValueOption = optionName optional-space <"="> optional-space constant 
 
-message = "message" space messageName optional-space messageBody
+message = <"message"> space messageName optional-space messageBody
 messageBody = <"{"> optional-space { (field | enum | message | option | oneof | mapField | reserved | emptyStatement) optional-space } optional-space <"}">
 
 service = "service" space serviceName space "{" space { option | rpc | emptyStatement space } optional-space "}"
