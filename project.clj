@@ -5,4 +5,6 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.9.0-alpha17"]
                  [instaparse "1.4.7"]
-                 [clj-http "3.7.0"]])
+                 [clj-http "3.7.0"]
+                 [com.google.protobuf/protobuf-java "3.5.0"]]
+  :java-source-paths ["java/src"])

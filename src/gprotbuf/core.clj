@@ -49,32 +49,36 @@
         (recur (inc i) v)
         {:type :varint, :value v, :index (inc i)}))))
 
-
-
   
-(defn sixty-four-bit-decode [bytes offset] :sixty-four-bit)
-(defn thirty-two-bit-decode [bytes offset] :thirty-two)
-(defn length-delim-decode [bytes offset] :length-delim)
+(defn sixty-four-bit-decode [bytes offset] (throw (IllegalStateException. "not impl")))
+(defn thirty-two-bit-decode [bytes offset] (throw (IllegalStateException. "not impl")))
+(defn length-delim-decode [bytes offset] (throw (IllegalStateException. "not impl")))
 
 (defn decode-key [bytes offset]
   (let [b (nth bytes offset)
         type (bit-and b 0x7)
         key-value (bit-shift-right (bit-and b 127) 3)]
-    (varint-decode (concat [(bit-or key-value (if (more-bytes? b) 0x80 0))] (nthrest bytes (inc offset))) 0)
-  ))
+    (assoc 
+      (update (varint-decode (concat [(bit-or key-value (if (more-bytes? b) 0x80 0))] (nthrest bytes (inc offset))) 0) 
+              :index (partial + offset)) :type type)))
 
 
 (defn decode [bytes offset]
+  (let [n (dec (count bytes))]
   (loop [i offset
          res []]
-    (let [k (decode-key bytes offset)
-          {:keys [type index]} k]
-    (condp = type
-      :varint (varint-decode bytes index)
-      1 (sixty-four-bit-decode bytes index)
-      2 (length-delim-decode bytes index)
-      5 (thirty-two-bit-decode bytes index)
-    ))))
+    (if (< i n)
+      (let [k (decode-key bytes i)
+          {:keys [type index value]} k
+          v (assoc 
+         (condp = type
+           0 (varint-decode bytes index)
+           1 (sixty-four-bit-decode bytes index)
+           2 (length-delim-decode bytes index)
+           5 (thirty-two-bit-decode bytes index)
+         ) :key value)]
+          (recur (:index v) (conj res v)))
+        res))))
 
 
 
