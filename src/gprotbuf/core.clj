@@ -47,12 +47,20 @@
           v (+ (bit-shift-left (bit-and b 127) (* (- i offset) 7)) res)]
       (if (more-bytes? b)
         (recur (inc i) v)
-        {:type :varint, :value v, :index (inc i)}))))
+        {:type 0, :value v, :index (inc i)}))))
 
   
 (defn sixty-four-bit-decode [bytes offset] (throw (IllegalStateException. "not impl")))
 (defn thirty-two-bit-decode [bytes offset] (throw (IllegalStateException. "not impl")))
-(defn length-delim-decode [bytes offset] (throw (IllegalStateException. "not impl")))
+
+(defn str-of [bytes start-ix end-ix]
+  (String. (byte-array (subvec bytes start-ix end-ix))))
+
+(defn length-delim-decode [bytes offset]
+  (let [l (dbg (varint-decode bytes offset))
+        start-ix (:index l)
+        end-ix (+ start-ix (:value l))]
+    (dbg {:type 2, :value (str-of bytes start-ix end-ix), :index (inc end-ix)})))
 
 (defn decode-key [bytes offset]
   (let [b (nth bytes offset)
