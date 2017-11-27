@@ -36,7 +36,9 @@
     (insta/transform
     ast->clj-map 
     ast))
-  
+
+(defn parse [text]
+  (-> text (parser :start :proto) ast->clj))
 
 (defn more-bytes? [b] (= (bit-and b 0x80) 0x80))
 
@@ -87,10 +89,6 @@
          ) :key value)]
           (recur (:index v) (conj res v)))
         res))))
-
-
-
-
 
 
 
