@@ -1,4 +1,5 @@
 (ns gprotbuf.core-test
+  (:use [clojure.pprint])
   (:require [clojure.test :refer :all]
             [gprotbuf.core :refer :all]
             [instaparse.core :as insta]
@@ -7,13 +8,11 @@
 
 
 (deftest an-import
-  (is (= [:import "import" "public" [:strLit [:charValue "o"] [:charValue "t"] [:charValue "h"] [:charValue "e"] [:charValue "r"] [:charValue "."] [:charValue "p"] [:charValue "r"] [:charValue "o"] [:charValue "t"] [:charValue "o"]]] 
-         (parser "import public \"other.proto\";" :start :import))))
+  (is  (not (insta/failure? (parser "import public \"other.proto\";" :start :import)))))
 
 
 (deftest a-package 
-  (is (= [:package "package" [:fullIdent [:ident [:letter "f"] [:letter "o"] [:letter "o"]] "." [:ident [:letter "b"] [:letter "a"] [:letter "r"]]] ";"]
-         (parser "package foo.bar;" :start :package))))
+  (is (not (insta/failure? (parser "package foo.bar;" :start :package)))))
 
 
 (def one-of "oneof foo {
@@ -50,18 +49,17 @@
 
 
 (deftest a-message
-  (is (= [:message "message" [:messageName [:ident [:letter "O"] [:letter "u"] [:letter "t"] [:letter "e"] [:letter "r"]]] [:messageBody [:option "option" [:optionName "(" [:fullIdent [:ident [:letter "m"] [:letter "y"] "_" [:letter "o"] [:letter "p"] [:letter "t"] [:letter "i"] [:letter "o"] [:letter "n"]]] ")" "." [:ident [:letter "a"]]] "=" [:constant [:boolLit "true"]] ";"] [:message "message" [:messageName [:ident [:letter "I"] [:letter "n"] [:letter "n"] [:letter "e"] [:letter "r"]]] [:messageBody [:field [:type [:enumType [:enumName [:ident [:letter "i"] [:letter "n"] [:letter "t"] [:decimalDigit "6"] [:decimalDigit "4"]]]]] [:fieldName [:ident [:letter "i"] [:letter "v"] [:letter "a"] [:letter "l"]]] [:fieldNumber [:intLit [:decimalLit "1"]]] ";"]]] [:mapField "map" [:keyType "int32"] "," [:type [:enumType [:enumName [:ident [:letter "s"] [:letter "t"] [:letter "r"] [:letter "i"] [:letter "n"] [:letter "g"]]]]] [:mapName [:ident [:letter "m"] [:letter "y"] "_" [:letter "m"] [:letter "a"] [:letter "p"]]] [:fieldNumber [:intLit [:decimalLit "2"]]] ";"]]] 
-         (parser message :start :message))))
+  (is (not (insta/failure? (parser message :start :message)))))
 
 
          
 (deftest a-service
-  (is (= [:service "service" [:serviceName [:ident [:letter "S"] [:letter "e"] [:letter "a"] [:letter "r"] [:letter "c"] [:letter "h"] [:letter "S"] [:letter "e"] [:letter "r"] [:letter "v"] [:letter "i"] [:letter "c"] [:letter "e"]]] "{" [:rpc "rpc" [:rpcName [:ident [:letter "S"] [:letter "e"] [:letter "a"] [:letter "r"] [:letter "c"] [:letter "h"]]] "(" [:messageType [:messageName [:ident [:letter "S"] [:letter "e"] [:letter "a"] [:letter "r"] [:letter "c"] [:letter "h"] [:letter "R"] [:letter "e"] [:letter "q"] [:letter "u"] [:letter "e"] [:letter "s"] [:letter "t"]]]] ")" "returns" "(" [:messageType [:messageName [:ident [:letter "S"] [:letter "e"] [:letter "a"] [:letter "r"] [:letter "c"] [:letter "h"] [:letter "R"] [:letter "e"] [:letter "s"] [:letter "p"] [:letter "o"] [:letter "n"] [:letter "s"] [:letter "e"]]]] ")" ";"] "}"] 
-        (parser 
-          "service SearchService {
-              rpc Search (SearchRequest) returns (SearchResponse);
-           }" :start :service)
-  )))      
+  (is  
+    (not (insta/failure? (parser 
+                           "service SearchService {
+          rpc Search (SearchRequest) returns (SearchResponse);
+       }" :start :service)
+  ))) )     
 
 
 
@@ -71,24 +69,184 @@
 import public \"other.proto\";
 option java_package = \"com.example.foo\";
 enum EnumAllowingAlias {
+  reserved 15, 9 to 11, 40;
   option allow_alias = true;
   UNKNOWN = 0;
-  STARTED = 1;
+  STARTED = 01;
   RUNNING = 2 [(custom_option) = \"hello world\"];
 }
 message outer {
   option (my_option).a = true;
+  bytes baField = 1;
   message inner {   
     int64 ival = 1;
   }
   repeated inner inner_message = 2;
   EnumAllowingAlias enum_field =3;
   map<int32, string> my_map = 4;
-}")
+  oneof test_oneof {
+     string name = 4;
+     SubMessage sub_message = 9;
+  }
+}
+service SearchService {
+  rpc Search (SearchRequest) returns (SearchResponse);
+}
+message SearchRequest {
+  string query = 1;
+  int32 page_number = 2;
+  int32 result_per_page = 3;
+  enum Corpus {
+    UNIVERSAL = 0;
+    WEB = 1;
+    IMAGES = 2;
+    LOCAL = 3;
+    NEWS = 4;
+    PRODUCTS = 5;
+    VIDEO = 6;
+  }
+  Corpus corpus = 4;
+}
+")
 
 
 (deftest a-proto-file 
   (is (not (-> proto-file parse insta/failure?))))
+
+
+
+
+(def mz-test 
+     "{
+	syntax = \"proto3\";
+	import public \"other.proto\";
+	option java_package = \"com.example.foo\";
+	enum EnumAllowingAlias {
+	  reserved 15, 9 to 11, 40;
+	  option allow_alias = true;
+	  UNKNOWN = 0;
+	  STARTED = 01;
+	  RUNNING = 2 [(custom_option) = \"hello world\"];
+	}
+	message outer {
+	  option (my_option).a = true;
+	  bytes baField = 1;
+	  message inner {   
+	    int64 ival = 1;
+	  }
+	  repeated inner inner_message = 2;
+	  EnumAllowingAlias enum_field =3;
+	  map<int32, string> my_map = 4;
+	  oneof test_oneof {
+	     string name = 4;
+	     SubMessage sub_message = 9;
+	  }
+	}
+	service SearchService {
+	  rpc Search (SearchRequest) returns (SearchResponse);
+	}
+	message SearchRequest {
+	  string query = 1;
+	  int32 page_number = 2;
+	  int32 result_per_page = 3;
+	  enum Corpus {
+	    UNIVERSAL = 0;
+	    WEB = 1;
+	    IMAGES = 2;
+	    LOCAL = 3;
+	    NEWS = 4;
+	    PRODUCTS = 5;
+	    VIDEO = 6;
+	  }
+	  Corpus corpus = 4;
+	}
+};
+
+//
+// Message UDR encoder and decoder
+//
+in_map Udr_in: external(Udr), target_internal(Udr) {
+   automatic;
+};
+
+decoder Dec: in_map(Udr_in);
+
+out_map Udr_out: external(Udr), internal(Udr) {
+   automatic;
+};
+
+encoder Enc: out_map(Udr_out);
+
+//
+// Message Container encoder and decoder
+//
+in_map in2: external(Container), target_internal(Container) {
+  automatic: use_external_names {
+    Udr: using in_map Udr_in;
+  };
+};
+
+decoder Dec2: in_map(in2);
+
+out_map out2: external(Container), internal(Container) {
+  automatic {
+    Udr: using out_map Udr_out;
+  };
+};
+
+encoder Enc2: out_map(out2);
+
+//
+// Message Packed encoder and decoder
+//
+in_map Packed_in: external(Packed), target_internal(Packed) {
+   automatic;
+};
+
+decoder Dec3: in_map(Packed_in);
+
+out_map Packed_out: external(Packed), internal(Packed) {
+   automatic;
+};
+
+encoder Enc3: out_map(Packed_out);
+")
+
+
+(def mz-test1 "
+{
+	syntax = \"proto3\";
+   message Udr {
+      bytes baField = 1;
+      string strField = 2;
+      uint32 intField = 3;
+      
+      repeated uint32 intList = 4;
+      
+      sint32 signed32 = 8;
+      repeated sint64 signed64 = 9;
+      
+      bool boolField = 20;
+      float floatField = 21;
+      double doubleField = 22;
+      fixed32 f32field = 23;
+      fixed64 f64field = 24;
+
+      int32 int32 = 30;
+      int64 int64 = 31;
+   }
+   
+   message Container {
+      Udr udrField = 1;
+      repeated Udr udrList = 2;
+   }
+   
+   message Packed {
+      repeated int32 data = 4 [packed=true];
+      int32 stop = 3;
+   }
+};
+")
 
 
 (defn http-call [url]

@@ -33,7 +33,7 @@ charValue = hexEscape | octEscape | charEscape  | #"[^\\0\n]"
 hexEscape = <'\\'> ( "x" | "X" ) hexDigit hexDigit   
 octEscape = <'\\'> octalDigit octalDigit octalDigit
 charEscape = <'\\'> ( "a" | "b" | "f" | "n" | "r" | "t" | "v" | '\\' | "\'" | '\"' ) 
-quote = "\'" | '\"'
+quote = <"\'"> | <'\"'>
 
 emptyStatement = ";"
 
@@ -41,13 +41,13 @@ constant = fullIdent | ( [ "-" | "+" ] intLit ) | ( [ "-" | "+" ] floatLit ) | s
 
 syntax = <"syntax"> optional-space <"="> optional-space quote "proto3" quote optional-space <";">
 
-import = "import" space [ ("weak" | "public") space ] strLit optional-space <";"> 
+import = <"import"> space [ ("weak" | "public") space ] strLit optional-space <";"> 
 
-package = "package" space fullIdent optional-space ";"
+package = "package" space fullIdent optional-space <";">
 
 
-option = "option" space optionName optional-space "=" optional-space constant optional-space ";"
-optionName = ( ident | "(" fullIdent ")" ) { "." ident }
+option = <"option"> space optionName optional-space <"="> optional-space constant optional-space <";">
+optionName = ( ident | "(" fullIdent ")" ) { <"."> ident }
 
 
 type = "double" | "float" | "int32" | "int64" | "uint32" | "uint64"
@@ -55,15 +55,15 @@ type = "double" | "float" | "int32" | "int64" | "uint32" | "uint64"
       | "bool" | "string" | "bytes" | messageType | enumType
 fieldNumber = intLit;
 
-field = [ "repeated" space ] type space fieldName optional-space <"="> optional-space fieldNumber optional-space [ <"["> fieldOptions <"]"> ] ";"
+field = [ "repeated" space ] type space fieldName optional-space <"="> optional-space fieldNumber optional-space [ <"["> fieldOptions <"]"> ] <";">
 fieldOptions = fieldOption { ","  fieldOption }
-fieldOption = optionName "=" constant
+fieldOption = optionName <"="> constant
 
 
-oneof = "oneof" space oneofName optional-space <"{"> { optional-space (oneofField | emptyStatement) optional-space } optional-space <"}">
+oneof = <"oneof"> space oneofName optional-space <"{"> { optional-space (oneofField | emptyStatement) optional-space } optional-space <"}">
 oneofField = type space fieldName optional-space <"="> optional-space fieldNumber [ <"["> fieldOptions <"]"> ] <";">
 
-mapField = <"map"> <"<"> optional-space keyType optional-space "," optional-space type optional-space <">"> space mapName optional-space <"="> optional-space fieldNumber [ "[" fieldOptions "]" ] ";"
+mapField = <"map"> <"<"> optional-space keyType optional-space <","> optional-space type optional-space <">"> space mapName optional-space <"="> optional-space fieldNumber [ "[" fieldOptions "]" ] <";">
 keyType = "int32" | "int64" | "uint32" | "uint64" | "sint32" | "sint64" |
           "fixed32" | "fixed64" | "sfixed32" | "sfixed64" | "bool" | "string"
           
@@ -74,20 +74,22 @@ fieldNames = fieldName optional-space { <","> optional-space fieldName optional-
 
 
 enum = <"enum"> space enumName optional-space enumBody
-enumBody = <"{"> optional-space { (option | enumField | emptyStatement) optional-space } <"}">
+enumBody = <"{"> optional-space { (reserved | option | enumField | emptyStatement) optional-space } <"}">
 enumField = ident optional-space <"="> optional-space intLit optional-space [ <"["> optional-space enumValueOption optional-space { <",">  optional-space enumValueOption optional-space } <"]"> ] optional-space <";">
 enumValueOption = optionName optional-space <"="> optional-space constant 
 
 message = <"message"> space messageName optional-space messageBody
 messageBody = <"{"> optional-space { (field | enum | message | option | oneof | mapField | reserved | emptyStatement) optional-space } optional-space <"}">
 
-service = "service" space serviceName space "{" space { option | rpc | emptyStatement space } optional-space "}"
-rpc = "rpc" space rpcName space "(" [ "stream" ] messageType ")" space "returns" space "(" [ "stream" ]
-messageType ")" (( "{" {option | emptyStatement } "}" ) | ";")
+service = <"service"> space serviceName space <"{"> space { option | rpc | emptyStatement space } optional-space <"}">
+rpc = "rpc" space rpcName space <"("> [ "stream" ] messageType <")"> space "returns" space <"("> [ "stream" ]
+messageType <")"> (( "{" {option | emptyStatement } "}" ) | <";">)
 
 
 proto = optional-space syntax optional-space { (import | package | option | topLevelDef | emptyStatement) optional-space }
 topLevelDef = message | enum | service
+
+block = optional-space <'{'> optional-space proto optional-space <'};'> 
 
 
 single-line-comment = '//' #'.'* new-line
