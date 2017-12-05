@@ -1,8 +1,8 @@
 (ns gprotbuf.core
   (:use [clojure.pprint])
   (:require [instaparse.core :as insta])
-  (:import [com.example.tutorial AddressBookProtos$Person AddressBookProtos$Person$PhoneNumber ASimpleTest$Udr]
-           [com.google.protobuf ByteString]
+  (:import #_[com.example.tutorial AddressBookProtos$Person AddressBookProtos$Person$PhoneNumber ASimpleTest$Udr]
+           #_[com.google.protobuf ByteString]
            [gprotbuf.exception ParserException]))
 
 (defmacro dbg [body]
@@ -60,7 +60,7 @@
             identity 
             (map 
               name-of 
-              args)))))]
+              (dbg args))))))]
       (throw-exception! (first res))
     args))
   
@@ -88,12 +88,12 @@
    :oneofName identity
    :oneofField (fn [& args] args)
    :messageName identity
+   :message (fn [& args] (conj args :message))
    :type identity
    :fieldName identity
    :fieldNumber identity
    :optionName identity
-   :proto (fn [& args] (dbg args))
- ;  :topLevelDef (fn [& args] args)
+   :proto (fn [& args] (apply check-name-and-reserved-clash (map second (filter #(= (first %) :topLevelDef) args))))
 ;   :field (fn [& args] (reduce (fn [m [k v]] (assoc m k v)) {} args))
    })
 
@@ -107,68 +107,6 @@
 
 
 
-(defn more-bytes? [b] (= (bit-and b 0x80) 0x80))
-
-#_(defn varint-decode [bytes offset] 
-   (loop [i offset
-          res 0]
-     (let [b (nth bytes i)
-           v (+ (bit-shift-left (bit-and b 127) (* (- i offset) 7)) res)]
-       (if (more-bytes? b)
-         (recur (inc i) v)
-         {:type 0, :value v, :index (inc i)}))))
-
-  
-#_(defn sixty-four-bit-decode [bytes offset] (throw (IllegalStateException. "not impl")))
-#_(defn thirty-two-bit-decode [bytes offset] (throw (IllegalStateException. "not impl")))
-
-#_(defn str-of [bytes start-ix end-ix]
-   (String. (byte-array (subvec bytes start-ix end-ix))))
-
-#_(defn length-delim-decode [bytes offset]
-   (let [l (dbg (varint-decode bytes offset))
-         start-ix (:index l)
-         end-ix (+ start-ix (:value l))]
-     (dbg {:type 2, :value (str-of bytes start-ix end-ix), :index (inc end-ix)})))
-
-#_(defn decode-key [bytes offset]
-   (let [b (nth bytes offset)
-         type (bit-and b 0x7)
-         key-value (bit-shift-right (bit-and b 127) 3)]
-     (assoc 
-       (update (varint-decode (concat [(bit-or key-value (if (more-bytes? b) 0x80 0))] (nthrest bytes (inc offset))) 0) 
-               :index (partial + offset)) :type type)))
-
-
-#_(defn decode [bytes offset]
-   (let [n (dec (count bytes))]
-   (loop [i offset
-          res []]
-     (if (< i n)
-       (let [k (decode-key bytes i)
-           {:keys [type index value]} k
-           v (assoc 
-          (condp = type
-            0 (varint-decode bytes index)
-            1 (sixty-four-bit-decode bytes index)
-            2 (length-delim-decode bytes index)
-            5 (thirty-two-bit-decode bytes index)
-          ) :key value)]
-           (recur (:index v) (conj res v)))
-         res))))
-
-
-
-#_(def message "message Outer {
-  option (my_option).a = true;
-  message Inner {   
-    int64 ival = 1;
-  }
-  map<int32, string> my_map = 2;
-}")
-#_(def message "message Test1 {
-  required int32 a = 1;
-}")
 
 (comment
 (def b (AddressBookProtos$Person/newBuilder))
