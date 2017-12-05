@@ -1,14 +1,14 @@
 syntax="proto3";
 option java_package = "com.example.tutorial";
 option java_outer_classname = "ASimpleTest";
+option allow_alias = true;
    message Udr {
-   	  enum Asdf {
+   	  enum fdsaa {
    	    A = 0;
    	    B = 1;
    	    C = 2;
    	  }
-   	  reserved 100 to 110;
-   	  reserved 108 to 118;
+   	  bytes fdsa = 101;
       bytes baField = 1;
       string strField = 2;
       uint32 intField = 3;
@@ -33,7 +33,6 @@ option java_outer_classname = "ASimpleTest";
    }
    
    message Container {
-      Udr.Asdf asdf = 10;
       Udr udrField = 1;
       repeated Udr udrList = 2;
       Udr.Hej hej = 3;

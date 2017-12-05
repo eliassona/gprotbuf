@@ -19,6 +19,11 @@ public final class ASimpleTest {
       com.google.protobuf.MessageOrBuilder {
 
     /**
+     * <code>optional bytes fdsa = 101;</code>
+     */
+    com.google.protobuf.ByteString getFdsa();
+
+    /**
      * <code>optional bytes baField = 1;</code>
      */
     com.google.protobuf.ByteString getBaField();
@@ -129,6 +134,7 @@ public final class ASimpleTest {
       super(builder);
     }
     private Udr() {
+      fdsa_ = com.google.protobuf.ByteString.EMPTY;
       baField_ = com.google.protobuf.ByteString.EMPTY;
       strField_ = "";
       intField_ = 0;
@@ -186,9 +192,9 @@ public final class ASimpleTest {
               break;
             }
             case 32: {
-              if (!((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
+              if (!((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
                 intList_ = new java.util.ArrayList<java.lang.Integer>();
-                mutable_bitField0_ |= 0x00000008;
+                mutable_bitField0_ |= 0x00000010;
               }
               intList_.add(input.readUInt32());
               break;
@@ -196,9 +202,9 @@ public final class ASimpleTest {
             case 34: {
               int length = input.readRawVarint32();
               int limit = input.pushLimit(length);
-              if (!((mutable_bitField0_ & 0x00000008) == 0x00000008) && input.getBytesUntilLimit() > 0) {
+              if (!((mutable_bitField0_ & 0x00000010) == 0x00000010) && input.getBytesUntilLimit() > 0) {
                 intList_ = new java.util.ArrayList<java.lang.Integer>();
-                mutable_bitField0_ |= 0x00000008;
+                mutable_bitField0_ |= 0x00000010;
               }
               while (input.getBytesUntilLimit() > 0) {
                 intList_.add(input.readUInt32());
@@ -212,9 +218,9 @@ public final class ASimpleTest {
               break;
             }
             case 72: {
-              if (!((mutable_bitField0_ & 0x00000020) == 0x00000020)) {
+              if (!((mutable_bitField0_ & 0x00000040) == 0x00000040)) {
                 signed64_ = new java.util.ArrayList<java.lang.Long>();
-                mutable_bitField0_ |= 0x00000020;
+                mutable_bitField0_ |= 0x00000040;
               }
               signed64_.add(input.readSInt64());
               break;
@@ -222,9 +228,9 @@ public final class ASimpleTest {
             case 74: {
               int length = input.readRawVarint32();
               int limit = input.pushLimit(length);
-              if (!((mutable_bitField0_ & 0x00000020) == 0x00000020) && input.getBytesUntilLimit() > 0) {
+              if (!((mutable_bitField0_ & 0x00000040) == 0x00000040) && input.getBytesUntilLimit() > 0) {
                 signed64_ = new java.util.ArrayList<java.lang.Long>();
-                mutable_bitField0_ |= 0x00000020;
+                mutable_bitField0_ |= 0x00000040;
               }
               while (input.getBytesUntilLimit() > 0) {
                 signed64_.add(input.readSInt64());
@@ -280,6 +286,11 @@ public final class ASimpleTest {
 
               break;
             }
+            case 810: {
+
+              fdsa_ = input.readBytes();
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -288,10 +299,10 @@ public final class ASimpleTest {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
+        if (((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
           intList_ = java.util.Collections.unmodifiableList(intList_);
         }
-        if (((mutable_bitField0_ & 0x00000020) == 0x00000020)) {
+        if (((mutable_bitField0_ & 0x00000040) == 0x00000040)) {
           signed64_ = java.util.Collections.unmodifiableList(signed64_);
         }
         makeExtensionsImmutable();
@@ -310,9 +321,9 @@ public final class ASimpleTest {
     }
 
     /**
-     * Protobuf enum {@code Udr.Asdf}
+     * Protobuf enum {@code Udr.fdsaa}
      */
-    public enum Asdf
+    public enum fdsaa
         implements com.google.protobuf.ProtocolMessageEnum {
       /**
        * <code>A = 0;</code>
@@ -355,11 +366,11 @@ public final class ASimpleTest {
        * @deprecated Use {@link #forNumber(int)} instead.
        */
       @java.lang.Deprecated
-      public static Asdf valueOf(int value) {
+      public static fdsaa valueOf(int value) {
         return forNumber(value);
       }
 
-      public static Asdf forNumber(int value) {
+      public static fdsaa forNumber(int value) {
         switch (value) {
           case 0: return A;
           case 1: return B;
@@ -368,15 +379,15 @@ public final class ASimpleTest {
         }
       }
 
-      public static com.google.protobuf.Internal.EnumLiteMap<Asdf>
+      public static com.google.protobuf.Internal.EnumLiteMap<fdsaa>
           internalGetValueMap() {
         return internalValueMap;
       }
       private static final com.google.protobuf.Internal.EnumLiteMap<
-          Asdf> internalValueMap =
-            new com.google.protobuf.Internal.EnumLiteMap<Asdf>() {
-              public Asdf findValueByNumber(int number) {
-                return Asdf.forNumber(number);
+          fdsaa> internalValueMap =
+            new com.google.protobuf.Internal.EnumLiteMap<fdsaa>() {
+              public fdsaa findValueByNumber(int number) {
+                return fdsaa.forNumber(number);
               }
             };
 
@@ -393,9 +404,9 @@ public final class ASimpleTest {
         return com.example.tutorial.ASimpleTest.Udr.getDescriptor().getEnumTypes().get(0);
       }
 
-      private static final Asdf[] VALUES = values();
+      private static final fdsaa[] VALUES = values();
 
-      public static Asdf valueOf(
+      public static fdsaa valueOf(
           com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
         if (desc.getType() != getDescriptor()) {
           throw new java.lang.IllegalArgumentException(
@@ -409,11 +420,11 @@ public final class ASimpleTest {
 
       private final int value;
 
-      private Asdf(int value) {
+      private fdsaa(int value) {
         this.value = value;
       }
 
-      // @@protoc_insertion_point(enum_scope:Udr.Asdf)
+      // @@protoc_insertion_point(enum_scope:Udr.fdsaa)
     }
 
     public interface HejOrBuilder extends
@@ -782,6 +793,15 @@ public final class ASimpleTest {
     }
 
     private int bitField0_;
+    public static final int FDSA_FIELD_NUMBER = 101;
+    private com.google.protobuf.ByteString fdsa_;
+    /**
+     * <code>optional bytes fdsa = 101;</code>
+     */
+    public com.google.protobuf.ByteString getFdsa() {
+      return fdsa_;
+    }
+
     public static final int BAFIELD_FIELD_NUMBER = 1;
     private com.google.protobuf.ByteString baField_;
     /**
@@ -1036,6 +1056,9 @@ public final class ASimpleTest {
       if (hej_ != null) {
         output.writeMessage(32, getHej());
       }
+      if (!fdsa_.isEmpty()) {
+        output.writeBytes(101, fdsa_);
+      }
     }
 
     public int getSerializedSize() {
@@ -1118,6 +1141,10 @@ public final class ASimpleTest {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(32, getHej());
       }
+      if (!fdsa_.isEmpty()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(101, fdsa_);
+      }
       memoizedSize = size;
       return size;
     }
@@ -1134,6 +1161,8 @@ public final class ASimpleTest {
       com.example.tutorial.ASimpleTest.Udr other = (com.example.tutorial.ASimpleTest.Udr) obj;
 
       boolean result = true;
+      result = result && getFdsa()
+          .equals(other.getFdsa());
       result = result && getBaField()
           .equals(other.getBaField());
       result = result && getStrField()
@@ -1179,6 +1208,8 @@ public final class ASimpleTest {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptorForType().hashCode();
+      hash = (37 * hash) + FDSA_FIELD_NUMBER;
+      hash = (53 * hash) + getFdsa().hashCode();
       hash = (37 * hash) + BAFIELD_FIELD_NUMBER;
       hash = (53 * hash) + getBaField().hashCode();
       hash = (37 * hash) + STRFIELD_FIELD_NUMBER;
@@ -1336,6 +1367,8 @@ public final class ASimpleTest {
       }
       public Builder clear() {
         super.clear();
+        fdsa_ = com.google.protobuf.ByteString.EMPTY;
+
         baField_ = com.google.protobuf.ByteString.EMPTY;
 
         strField_ = "";
@@ -1343,11 +1376,11 @@ public final class ASimpleTest {
         intField_ = 0;
 
         intList_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000008);
+        bitField0_ = (bitField0_ & ~0x00000010);
         signed32_ = 0;
 
         signed64_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000020);
+        bitField0_ = (bitField0_ & ~0x00000040);
         boolField_ = false;
 
         floatField_ = 0F;
@@ -1392,18 +1425,19 @@ public final class ASimpleTest {
         com.example.tutorial.ASimpleTest.Udr result = new com.example.tutorial.ASimpleTest.Udr(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
+        result.fdsa_ = fdsa_;
         result.baField_ = baField_;
         result.strField_ = strField_;
         result.intField_ = intField_;
-        if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        if (((bitField0_ & 0x00000010) == 0x00000010)) {
           intList_ = java.util.Collections.unmodifiableList(intList_);
-          bitField0_ = (bitField0_ & ~0x00000008);
+          bitField0_ = (bitField0_ & ~0x00000010);
         }
         result.intList_ = intList_;
         result.signed32_ = signed32_;
-        if (((bitField0_ & 0x00000020) == 0x00000020)) {
+        if (((bitField0_ & 0x00000040) == 0x00000040)) {
           signed64_ = java.util.Collections.unmodifiableList(signed64_);
-          bitField0_ = (bitField0_ & ~0x00000020);
+          bitField0_ = (bitField0_ & ~0x00000040);
         }
         result.signed64_ = signed64_;
         result.boolField_ = boolField_;
@@ -1460,6 +1494,9 @@ public final class ASimpleTest {
 
       public Builder mergeFrom(com.example.tutorial.ASimpleTest.Udr other) {
         if (other == com.example.tutorial.ASimpleTest.Udr.getDefaultInstance()) return this;
+        if (other.getFdsa() != com.google.protobuf.ByteString.EMPTY) {
+          setFdsa(other.getFdsa());
+        }
         if (other.getBaField() != com.google.protobuf.ByteString.EMPTY) {
           setBaField(other.getBaField());
         }
@@ -1473,7 +1510,7 @@ public final class ASimpleTest {
         if (!other.intList_.isEmpty()) {
           if (intList_.isEmpty()) {
             intList_ = other.intList_;
-            bitField0_ = (bitField0_ & ~0x00000008);
+            bitField0_ = (bitField0_ & ~0x00000010);
           } else {
             ensureIntListIsMutable();
             intList_.addAll(other.intList_);
@@ -1486,7 +1523,7 @@ public final class ASimpleTest {
         if (!other.signed64_.isEmpty()) {
           if (signed64_.isEmpty()) {
             signed64_ = other.signed64_;
-            bitField0_ = (bitField0_ & ~0x00000020);
+            bitField0_ = (bitField0_ & ~0x00000040);
           } else {
             ensureSigned64IsMutable();
             signed64_.addAll(other.signed64_);
@@ -1543,6 +1580,35 @@ public final class ASimpleTest {
         return this;
       }
       private int bitField0_;
+
+      private com.google.protobuf.ByteString fdsa_ = com.google.protobuf.ByteString.EMPTY;
+      /**
+       * <code>optional bytes fdsa = 101;</code>
+       */
+      public com.google.protobuf.ByteString getFdsa() {
+        return fdsa_;
+      }
+      /**
+       * <code>optional bytes fdsa = 101;</code>
+       */
+      public Builder setFdsa(com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        fdsa_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bytes fdsa = 101;</code>
+       */
+      public Builder clearFdsa() {
+        
+        fdsa_ = getDefaultInstance().getFdsa();
+        onChanged();
+        return this;
+      }
 
       private com.google.protobuf.ByteString baField_ = com.google.protobuf.ByteString.EMPTY;
       /**
@@ -1670,9 +1736,9 @@ public final class ASimpleTest {
 
       private java.util.List<java.lang.Integer> intList_ = java.util.Collections.emptyList();
       private void ensureIntListIsMutable() {
-        if (!((bitField0_ & 0x00000008) == 0x00000008)) {
+        if (!((bitField0_ & 0x00000010) == 0x00000010)) {
           intList_ = new java.util.ArrayList<java.lang.Integer>(intList_);
-          bitField0_ |= 0x00000008;
+          bitField0_ |= 0x00000010;
          }
       }
       /**
@@ -1729,7 +1795,7 @@ public final class ASimpleTest {
        */
       public Builder clearIntList() {
         intList_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000008);
+        bitField0_ = (bitField0_ & ~0x00000010);
         onChanged();
         return this;
       }
@@ -1762,9 +1828,9 @@ public final class ASimpleTest {
 
       private java.util.List<java.lang.Long> signed64_ = java.util.Collections.emptyList();
       private void ensureSigned64IsMutable() {
-        if (!((bitField0_ & 0x00000020) == 0x00000020)) {
+        if (!((bitField0_ & 0x00000040) == 0x00000040)) {
           signed64_ = new java.util.ArrayList<java.lang.Long>(signed64_);
-          bitField0_ |= 0x00000020;
+          bitField0_ |= 0x00000040;
          }
       }
       /**
@@ -1821,7 +1887,7 @@ public final class ASimpleTest {
        */
       public Builder clearSigned64() {
         signed64_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000020);
+        bitField0_ = (bitField0_ & ~0x00000040);
         onChanged();
         return this;
       }
@@ -2178,15 +2244,6 @@ public final class ASimpleTest {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>optional .Udr.Asdf asdf = 10;</code>
-     */
-    int getAsdfValue();
-    /**
-     * <code>optional .Udr.Asdf asdf = 10;</code>
-     */
-    com.example.tutorial.ASimpleTest.Udr.Asdf getAsdf();
-
-    /**
      * <code>optional .Udr udrField = 1;</code>
      */
     boolean hasUdrField();
@@ -2248,7 +2305,6 @@ public final class ASimpleTest {
       super(builder);
     }
     private Container() {
-      asdf_ = 0;
       udrList_ = java.util.Collections.emptyList();
     }
 
@@ -2291,9 +2347,9 @@ public final class ASimpleTest {
               break;
             }
             case 18: {
-              if (!((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
                 udrList_ = new java.util.ArrayList<com.example.tutorial.ASimpleTest.Udr>();
-                mutable_bitField0_ |= 0x00000004;
+                mutable_bitField0_ |= 0x00000002;
               }
               udrList_.add(
                   input.readMessage(com.example.tutorial.ASimpleTest.Udr.parser(), extensionRegistry));
@@ -2312,12 +2368,6 @@ public final class ASimpleTest {
 
               break;
             }
-            case 80: {
-              int rawValue = input.readEnum();
-
-              asdf_ = rawValue;
-              break;
-            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -2326,7 +2376,7 @@ public final class ASimpleTest {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+        if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
           udrList_ = java.util.Collections.unmodifiableList(udrList_);
         }
         makeExtensionsImmutable();
@@ -2345,22 +2395,6 @@ public final class ASimpleTest {
     }
 
     private int bitField0_;
-    public static final int ASDF_FIELD_NUMBER = 10;
-    private int asdf_;
-    /**
-     * <code>optional .Udr.Asdf asdf = 10;</code>
-     */
-    public int getAsdfValue() {
-      return asdf_;
-    }
-    /**
-     * <code>optional .Udr.Asdf asdf = 10;</code>
-     */
-    public com.example.tutorial.ASimpleTest.Udr.Asdf getAsdf() {
-      com.example.tutorial.ASimpleTest.Udr.Asdf result = com.example.tutorial.ASimpleTest.Udr.Asdf.valueOf(asdf_);
-      return result == null ? com.example.tutorial.ASimpleTest.Udr.Asdf.UNRECOGNIZED : result;
-    }
-
     public static final int UDRFIELD_FIELD_NUMBER = 1;
     private com.example.tutorial.ASimpleTest.Udr udrField_;
     /**
@@ -2459,9 +2493,6 @@ public final class ASimpleTest {
       if (hej_ != null) {
         output.writeMessage(3, getHej());
       }
-      if (asdf_ != com.example.tutorial.ASimpleTest.Udr.Asdf.A.getNumber()) {
-        output.writeEnum(10, asdf_);
-      }
     }
 
     public int getSerializedSize() {
@@ -2481,10 +2512,6 @@ public final class ASimpleTest {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(3, getHej());
       }
-      if (asdf_ != com.example.tutorial.ASimpleTest.Udr.Asdf.A.getNumber()) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeEnumSize(10, asdf_);
-      }
       memoizedSize = size;
       return size;
     }
@@ -2501,7 +2528,6 @@ public final class ASimpleTest {
       com.example.tutorial.ASimpleTest.Container other = (com.example.tutorial.ASimpleTest.Container) obj;
 
       boolean result = true;
-      result = result && asdf_ == other.asdf_;
       result = result && (hasUdrField() == other.hasUdrField());
       if (hasUdrField()) {
         result = result && getUdrField()
@@ -2524,8 +2550,6 @@ public final class ASimpleTest {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptorForType().hashCode();
-      hash = (37 * hash) + ASDF_FIELD_NUMBER;
-      hash = (53 * hash) + asdf_;
       if (hasUdrField()) {
         hash = (37 * hash) + UDRFIELD_FIELD_NUMBER;
         hash = (53 * hash) + getUdrField().hashCode();
@@ -2657,8 +2681,6 @@ public final class ASimpleTest {
       }
       public Builder clear() {
         super.clear();
-        asdf_ = 0;
-
         if (udrFieldBuilder_ == null) {
           udrField_ = null;
         } else {
@@ -2667,7 +2689,7 @@ public final class ASimpleTest {
         }
         if (udrListBuilder_ == null) {
           udrList_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000004);
+          bitField0_ = (bitField0_ & ~0x00000002);
         } else {
           udrListBuilder_.clear();
         }
@@ -2701,16 +2723,15 @@ public final class ASimpleTest {
         com.example.tutorial.ASimpleTest.Container result = new com.example.tutorial.ASimpleTest.Container(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
-        result.asdf_ = asdf_;
         if (udrFieldBuilder_ == null) {
           result.udrField_ = udrField_;
         } else {
           result.udrField_ = udrFieldBuilder_.build();
         }
         if (udrListBuilder_ == null) {
-          if (((bitField0_ & 0x00000004) == 0x00000004)) {
+          if (((bitField0_ & 0x00000002) == 0x00000002)) {
             udrList_ = java.util.Collections.unmodifiableList(udrList_);
-            bitField0_ = (bitField0_ & ~0x00000004);
+            bitField0_ = (bitField0_ & ~0x00000002);
           }
           result.udrList_ = udrList_;
         } else {
@@ -2763,9 +2784,6 @@ public final class ASimpleTest {
 
       public Builder mergeFrom(com.example.tutorial.ASimpleTest.Container other) {
         if (other == com.example.tutorial.ASimpleTest.Container.getDefaultInstance()) return this;
-        if (other.asdf_ != 0) {
-          setAsdfValue(other.getAsdfValue());
-        }
         if (other.hasUdrField()) {
           mergeUdrField(other.getUdrField());
         }
@@ -2773,7 +2791,7 @@ public final class ASimpleTest {
           if (!other.udrList_.isEmpty()) {
             if (udrList_.isEmpty()) {
               udrList_ = other.udrList_;
-              bitField0_ = (bitField0_ & ~0x00000004);
+              bitField0_ = (bitField0_ & ~0x00000002);
             } else {
               ensureUdrListIsMutable();
               udrList_.addAll(other.udrList_);
@@ -2786,7 +2804,7 @@ public final class ASimpleTest {
               udrListBuilder_.dispose();
               udrListBuilder_ = null;
               udrList_ = other.udrList_;
-              bitField0_ = (bitField0_ & ~0x00000004);
+              bitField0_ = (bitField0_ & ~0x00000002);
               udrListBuilder_ = 
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                    getUdrListFieldBuilder() : null;
@@ -2824,50 +2842,6 @@ public final class ASimpleTest {
         return this;
       }
       private int bitField0_;
-
-      private int asdf_ = 0;
-      /**
-       * <code>optional .Udr.Asdf asdf = 10;</code>
-       */
-      public int getAsdfValue() {
-        return asdf_;
-      }
-      /**
-       * <code>optional .Udr.Asdf asdf = 10;</code>
-       */
-      public Builder setAsdfValue(int value) {
-        asdf_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional .Udr.Asdf asdf = 10;</code>
-       */
-      public com.example.tutorial.ASimpleTest.Udr.Asdf getAsdf() {
-        com.example.tutorial.ASimpleTest.Udr.Asdf result = com.example.tutorial.ASimpleTest.Udr.Asdf.valueOf(asdf_);
-        return result == null ? com.example.tutorial.ASimpleTest.Udr.Asdf.UNRECOGNIZED : result;
-      }
-      /**
-       * <code>optional .Udr.Asdf asdf = 10;</code>
-       */
-      public Builder setAsdf(com.example.tutorial.ASimpleTest.Udr.Asdf value) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
-        
-        asdf_ = value.getNumber();
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional .Udr.Asdf asdf = 10;</code>
-       */
-      public Builder clearAsdf() {
-        
-        asdf_ = 0;
-        onChanged();
-        return this;
-      }
 
       private com.example.tutorial.ASimpleTest.Udr udrField_ = null;
       private com.google.protobuf.SingleFieldBuilderV3<
@@ -2989,9 +2963,9 @@ public final class ASimpleTest {
       private java.util.List<com.example.tutorial.ASimpleTest.Udr> udrList_ =
         java.util.Collections.emptyList();
       private void ensureUdrListIsMutable() {
-        if (!((bitField0_ & 0x00000004) == 0x00000004)) {
+        if (!((bitField0_ & 0x00000002) == 0x00000002)) {
           udrList_ = new java.util.ArrayList<com.example.tutorial.ASimpleTest.Udr>(udrList_);
-          bitField0_ |= 0x00000004;
+          bitField0_ |= 0x00000002;
          }
       }
 
@@ -3141,7 +3115,7 @@ public final class ASimpleTest {
       public Builder clearUdrList() {
         if (udrListBuilder_ == null) {
           udrList_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000004);
+          bitField0_ = (bitField0_ & ~0x00000002);
           onChanged();
         } else {
           udrListBuilder_.clear();
@@ -3218,7 +3192,7 @@ public final class ASimpleTest {
           udrListBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               com.example.tutorial.ASimpleTest.Udr, com.example.tutorial.ASimpleTest.Udr.Builder, com.example.tutorial.ASimpleTest.UdrOrBuilder>(
                   udrList_,
-                  ((bitField0_ & 0x00000004) == 0x00000004),
+                  ((bitField0_ & 0x00000002) == 0x00000002),
                   getParentForChildren(),
                   isClean());
           udrList_ = null;
@@ -4026,19 +4000,19 @@ public final class ASimpleTest {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\020simpletest.proto\"\250\002\n\003Udr\022\017\n\007baField\030\001 " +
-      "\001(\014\022\020\n\010strField\030\002 \001(\t\022\020\n\010intField\030\003 \001(\r\022" +
-      "\017\n\007intList\030\004 \003(\r\022\020\n\010signed32\030\010 \001(\021\022\020\n\010si" +
-      "gned64\030\t \003(\022\022\021\n\tboolField\030\024 \001(\010\022\022\n\nfloat" +
-      "Field\030\025 \001(\002\022\023\n\013doubleField\030\026 \001(\001\022\020\n\010f32f" +
-      "ield\030\027 \001(\007\022\020\n\010f64field\030\030 \001(\006\022\r\n\005int32\030\036 " +
-      "\001(\005\022\r\n\005int64\030\037 \001(\003\022\025\n\003hej\030  \001(\0132\010.Udr.He" +
-      "j\032\005\n\003Hej\"\033\n\004Asdf\022\005\n\001A\020\000\022\005\n\001B\020\001\022\005\n\001C\020\002\"j\n" +
-      "\tContainer\022\027\n\004asdf\030\n \001(\0162\t.Udr.Asdf\022\026\n\010u" +
-      "drField\030\001 \001(\0132\004.Udr\022\025\n\007udrList\030\002 \003(\0132\004.U",
-      "dr\022\025\n\003hej\030\003 \001(\0132\010.Udr.Hej\"(\n\006Packed\022\020\n\004d" +
-      "ata\030\004 \003(\005B\002\020\001\022\014\n\004stop\030\003 \001(\005B#\n\024com.examp" +
-      "le.tutorialB\013ASimpleTestb\006proto3"
+      "\n\020simpletest.proto\"\267\002\n\003Udr\022\014\n\004fdsa\030e \001(\014" +
+      "\022\017\n\007baField\030\001 \001(\014\022\020\n\010strField\030\002 \001(\t\022\020\n\010i" +
+      "ntField\030\003 \001(\r\022\017\n\007intList\030\004 \003(\r\022\020\n\010signed" +
+      "32\030\010 \001(\021\022\020\n\010signed64\030\t \003(\022\022\021\n\tboolField\030" +
+      "\024 \001(\010\022\022\n\nfloatField\030\025 \001(\002\022\023\n\013doubleField" +
+      "\030\026 \001(\001\022\020\n\010f32field\030\027 \001(\007\022\020\n\010f64field\030\030 \001" +
+      "(\006\022\r\n\005int32\030\036 \001(\005\022\r\n\005int64\030\037 \001(\003\022\025\n\003hej\030" +
+      "  \001(\0132\010.Udr.Hej\032\005\n\003Hej\"\034\n\005fdsaa\022\005\n\001A\020\000\022\005" +
+      "\n\001B\020\001\022\005\n\001C\020\002\"Q\n\tContainer\022\026\n\010udrField\030\001 " +
+      "\001(\0132\004.Udr\022\025\n\007udrList\030\002 \003(\0132\004.Udr\022\025\n\003hej\030",
+      "\003 \001(\0132\010.Udr.Hej\"(\n\006Packed\022\020\n\004data\030\004 \003(\005B" +
+      "\002\020\001\022\014\n\004stop\030\003 \001(\005B#\n\024com.example.tutoria" +
+      "lB\013ASimpleTestb\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -4057,7 +4031,7 @@ public final class ASimpleTest {
     internal_static_Udr_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_Udr_descriptor,
-        new java.lang.String[] { "BaField", "StrField", "IntField", "IntList", "Signed32", "Signed64", "BoolField", "FloatField", "DoubleField", "F32Field", "F64Field", "Int32", "Int64", "Hej", });
+        new java.lang.String[] { "Fdsa", "BaField", "StrField", "IntField", "IntList", "Signed32", "Signed64", "BoolField", "FloatField", "DoubleField", "F32Field", "F64Field", "Int32", "Int64", "Hej", });
     internal_static_Udr_Hej_descriptor =
       internal_static_Udr_descriptor.getNestedTypes().get(0);
     internal_static_Udr_Hej_fieldAccessorTable = new
@@ -4069,7 +4043,7 @@ public final class ASimpleTest {
     internal_static_Container_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_Container_descriptor,
-        new java.lang.String[] { "Asdf", "UdrField", "UdrList", "Hej", });
+        new java.lang.String[] { "UdrField", "UdrList", "Hej", });
     internal_static_Packed_descriptor =
       getDescriptor().getMessageTypes().get(2);
     internal_static_Packed_fieldAccessorTable = new
