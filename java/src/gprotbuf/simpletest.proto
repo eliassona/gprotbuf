@@ -1,0 +1,45 @@
+syntax="proto3";
+option java_package = "com.example.tutorial";
+option java_outer_classname = "ASimpleTest";
+   message Udr {
+   	  enum Asdf {
+   	    A = 0;
+   	    B = 1;
+   	    C = 2;
+   	  }
+   	  reserved 100 to 110;
+   	  reserved 108 to 118;
+      bytes baField = 1;
+      string strField = 2;
+      uint32 intField = 3;
+      
+      repeated uint32 intList = 4 ;
+      
+      sint32 signed32 = 8;
+      repeated sint64 signed64 = 9;
+      
+      bool boolField = 20;
+      float floatField = 21;
+      double doubleField = 22;
+      fixed32 f32field = 23;
+      fixed64 f64field = 24;
+
+      int32 int32 = 30;
+      int64 int64 = 31;
+      message Hej {
+      }
+      
+      Hej hej = 32;
+   }
+   
+   message Container {
+      Udr.Asdf asdf = 10;
+      Udr udrField = 1;
+      repeated Udr udrList = 2;
+      Udr.Hej hej = 3;
+   }
+   
+   message Packed {
+      repeated int32 data = 4 [packed=true];
+      int32 stop = 3;
+   }
