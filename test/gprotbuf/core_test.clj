@@ -4,6 +4,7 @@
             [gprotbuf.core :refer :all]
             [instaparse.core :as insta]
             [clj-http.client :as client])
+  (:import [gprotbuf.exception ParserException])
   )
 
 
@@ -111,8 +112,84 @@ message SearchRequest {
 
 
 (deftest a-proto-file 
-  (is (not (-> proto-file parse insta/failure?))))
+  #_(is (not (-> proto-file parse insta/failure?))))
 
+;;parse-block
+
+
+(defn successful-parse-block [text] 
+  (let [ast (parse-block text)]
+    (when (not (insta/failure? ast)) 
+      (ast->clj ast))))
+
+(defn failed-context-parse-block [text line column] 
+  (let [ast (parse-block text)]
+    (if (not (insta/failure? ast)) 
+      (try 
+        (ast->clj ast)
+        (is false "This proto text should fail")
+        (catch ParserException e
+          (is (= line (.line e)))
+          (is (= column (.column e)))
+          ))
+      (is false (insta/get-failure ast)))))
+
+(deftest empty-block
+  (successful-parse-block "{ syntax=\"proto3\"; };"))
+
+(deftest reserved-to
+    (successful-parse-block 
+    "{
+       syntax=\"proto3\";
+       message M1 {
+         reserved 1 to 10, 20 to 30;
+       }
+     };"))
+
+
+
+(deftest verify-that-reserved-cannot-overlap 
+  (failed-context-parse-block 
+    "{
+       syntax=\"proto3\";
+       message M1 {
+         reserved 1;
+         reserved 1;
+       }
+     };" 5 10)
+  
+  (failed-context-parse-block 
+    "{
+       syntax=\"proto3\";
+       message M1 {
+         reserved 1 to 10, 5 to 15;
+       }
+     };" 4 10)
+  (failed-context-parse-block 
+    "{
+       syntax=\"proto3\";
+       message M1 {
+         reserved 1 to 10, 20 to 25;
+         string str1 = 5;
+       }
+     };" 5 10)
+  (failed-context-parse-block 
+    "{
+       syntax=\"proto3\";
+       message M1 {
+         string str1 = 5;
+         string str2 = 5;
+       }
+     };" 5 10)
+  (failed-context-parse-block 
+    "{
+       syntax=\"proto3\";
+       message M1 {
+         reserved 5 to max;
+         string str1 = 1000;
+       }
+     };" 5 10)
+  )
 
 
 
