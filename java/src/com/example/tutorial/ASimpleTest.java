@@ -333,13 +333,13 @@ public final class ASimpleTest {
        * <code>B = 1;</code>
        */
       B(1),
-      /**
-       * <code>C = 2;</code>
-       */
-      C(2),
       UNRECOGNIZED(-1),
       ;
 
+      /**
+       * <code>C = 1;</code>
+       */
+      public static final fdsaa C = B;
       /**
        * <code>A = 0;</code>
        */
@@ -349,9 +349,9 @@ public final class ASimpleTest {
        */
       public static final int B_VALUE = 1;
       /**
-       * <code>C = 2;</code>
+       * <code>C = 1;</code>
        */
-      public static final int C_VALUE = 2;
+      public static final int C_VALUE = 1;
 
 
       public final int getNumber() {
@@ -374,7 +374,6 @@ public final class ASimpleTest {
         switch (value) {
           case 0: return A;
           case 1: return B;
-          case 2: return C;
           default: return null;
         }
       }
@@ -404,7 +403,9 @@ public final class ASimpleTest {
         return com.example.tutorial.ASimpleTest.Udr.getDescriptor().getEnumTypes().get(0);
       }
 
-      private static final fdsaa[] VALUES = values();
+      private static final fdsaa[] VALUES = {
+        A, B, C, 
+      };
 
       public static fdsaa valueOf(
           com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
@@ -4000,19 +4001,20 @@ public final class ASimpleTest {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\020simpletest.proto\"\267\002\n\003Udr\022\014\n\004fdsa\030e \001(\014" +
+      "\n\020simpletest.proto\"\313\002\n\003Udr\022\014\n\004fdsa\030e \001(\014" +
       "\022\017\n\007baField\030\001 \001(\014\022\020\n\010strField\030\002 \001(\t\022\020\n\010i" +
       "ntField\030\003 \001(\r\022\017\n\007intList\030\004 \003(\r\022\020\n\010signed" +
       "32\030\010 \001(\021\022\020\n\010signed64\030\t \003(\022\022\021\n\tboolField\030" +
       "\024 \001(\010\022\022\n\nfloatField\030\025 \001(\002\022\023\n\013doubleField" +
       "\030\026 \001(\001\022\020\n\010f32field\030\027 \001(\007\022\020\n\010f64field\030\030 \001" +
       "(\006\022\r\n\005int32\030\036 \001(\005\022\r\n\005int64\030\037 \001(\003\022\025\n\003hej\030" +
-      "  \001(\0132\010.Udr.Hej\032\005\n\003Hej\"\034\n\005fdsaa\022\005\n\001A\020\000\022\005" +
-      "\n\001B\020\001\022\005\n\001C\020\002\"Q\n\tContainer\022\026\n\010udrField\030\001 " +
-      "\001(\0132\004.Udr\022\025\n\007udrList\030\002 \003(\0132\004.Udr\022\025\n\003hej\030",
-      "\003 \001(\0132\010.Udr.Hej\"(\n\006Packed\022\020\n\004data\030\004 \003(\005B" +
-      "\002\020\001\022\014\n\004stop\030\003 \001(\005B#\n\024com.example.tutoria" +
-      "lB\013ASimpleTestb\006proto3"
+      "  \001(\0132\010.Udr.Hej\032\005\n\003Hej\" \n\005fdsaa\022\005\n\001A\020\000\022\005" +
+      "\n\001B\020\001\022\005\n\001C\020\001\032\002\020\001J\006\010\350\007\020\337\007J\006\010\343\007\020\346\007\"Q\n\tCont" +
+      "ainer\022\026\n\010udrField\030\001 \001(\0132\004.Udr\022\025\n\007udrList",
+      "\030\002 \003(\0132\004.Udr\022\025\n\003hej\030\003 \001(\0132\010.Udr.Hej\"(\n\006P" +
+      "acked\022\020\n\004data\030\004 \003(\005B\002\020\001\022\014\n\004stop\030\003 \001(\005B#\n" +
+      "\024com.example.tutorialB\013ASimpleTestb\006prot" +
+      "o3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
