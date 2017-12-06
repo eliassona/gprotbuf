@@ -52,7 +52,6 @@
   (let [col-line (meta m)]
     (throw (ParserException. (format "%s is already defined" (:name m))  (:instaparse.gll/start-line col-line) (:instaparse.gll/start-column col-line)))))
 
-
 (defn check-name-clash [& args]
   (when-let [res  
     (first
@@ -63,12 +62,8 @@
             identity 
             (map 
               name-of 
-              args)))))]
+              (dbg args))))))]
       (throw-exception! (first res))))
-
-
-
-
 
 (defn intersect? [[[from-1 to-1] [from-2 to-2]]]
   (or 
@@ -91,17 +86,17 @@
       (when (intersect? c)
         (throw-exception! (second c)))))
 
-(defn check-field-tags! [fields reserved use-aliasing]
+(defn check-field-tags! [fields reserved]
   (loop [reserved reserved
          fields fields]
     (when-let [f (first fields)]
       (let [range-of (range-of (meta f))
             tag (range-of (nth f 3))]
         (check-reserved-overlap! 
-          (for [x reserved
+          (for [x (conj reserved tag-reserved-ranged)
                 y [tag]]
             [x y]))
-        (recur (if use-aliasing reserved (conj reserved tag)) (rest fields)))))) 
+        (recur (conj reserved tag) (rest fields)))))) 
   
 
 (defn check-reserved-clash [& args]
@@ -115,7 +110,7 @@
                           :when (not= (nth-fn x) (nth-fn y))]
                       [x y])]
     (check-reserved-overlap! all-comb)
-    (check-field-tags! fields ranges false) ;TODO aliasing    
+    (check-field-tags! fields ranges)    
     ))
       
 

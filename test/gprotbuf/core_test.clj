@@ -191,6 +191,56 @@ message SearchRequest {
      };" 5 10)
   )
 
+(deftest verify-that-19000-to-19999-cannot-be-used
+    (failed-context-parse-block 
+    "{
+       syntax=\"proto3\";
+       message M1 {
+         string str1 = 19000;
+       }
+     };" 4 10)
+  )
+
+(deftest verify-that-enum-with-same-value-causes-error
+    (failed-context-parse-block 
+    "{
+       syntax=\"proto3\";
+       enum E1 {
+          V0 = 0;
+          V1 = 1;
+          V2 = 1;
+       }
+     };" 4 10)
+  )
+(deftest verify-that-empty-enum-causes-error
+    (failed-context-parse-block 
+    "{
+       syntax=\"proto3\";
+       enum E1 {
+       }
+     };" 4 10)
+  )
+
+(deftest verify-that-enum-without-zero-causes-error
+    (failed-context-parse-block 
+    "{
+       syntax=\"proto3\";
+       enum E1 {
+         V1 = 1;
+       }
+     };" 4 10)
+  )
+(deftest verify-that-enum-with-same-name-causes-error
+    (failed-context-parse-block 
+    "{
+       syntax=\"proto3\";
+       enum E1 {
+         V0 = 0;
+         V0 = 1;
+       }
+     };" 4 10)
+  )
+
 
 
 (def mz-test 
