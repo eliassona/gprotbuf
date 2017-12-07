@@ -62,7 +62,7 @@
             identity 
             (map 
               name-of 
-              (dbg args))))))]
+              args)))))]
       (throw-exception! (first res))))
 
 (defn intersect? [[[from-1 to-1] [from-2 to-2]]]
@@ -118,8 +118,29 @@
   (apply check-name-clash args)
   (apply check-reserved-clash args)
    args)
-  
 
+
+(defn check-duplicates! [values the-fn]
+  (let [f (filter #(> (val %) 1) (frequencies (map the-fn values)))]
+    (when (not (empty? f))
+      (let [e (second (filter #(= (-> f first first) (the-fn %)) values))]
+      (throw-exception! (with-meta {:name (second e)} (meta e)))))))
+
+(defn check-duplicate-enum-names! [values] (check-duplicates! values second))
+(defn check-duplicate-enum-values! [values] (check-duplicates! values #(nth % 2)))
+
+(defn check-enum-values [& args]
+  (let [body (second args)
+        values (filter #(= (first %) :enumField) body)
+        opts (filter #(= (first %) :option) body)
+        name (-> args first second)
+        m (-> args first meta)]
+    (when (empty? values) (throw-exception! (with-meta {:name name} m)))
+    (when (not= (-> values first (nth 2)) 0) (throw-exception! (with-meta {:name name} (-> values first meta))))
+    (check-duplicate-enum-names! values)
+    (check-duplicate-enum-values! values)
+    [name body]
+  ))
 
 
 (def ast->clj-map 
@@ -130,7 +151,7 @@
    :hexLit (fn [x y z] (read-string (str x y z)))
    :decimalDigit read-string
    :decimalLit (fn [& args] (read-string (apply str args)))
-   :enumName identity
+;   :enumName identity
    :enumType (fn [& args] (apply str args))
    :messageBody check-name-and-reserved-clash
    :intLit identity
@@ -148,6 +169,8 @@
    :fieldName identity
    :fieldNumber identity
    :optionName identity
+   :enum check-enum-values
+   :enumBody (fn [& args] args)
    :proto (fn [& args] (apply check-name-and-reserved-clash (map second (filter #(= (first %) :topLevelDef) args))))
 ;   :field (fn [& args] (reduce (fn [m [k v]] (assoc m k v)) {} args))
    })

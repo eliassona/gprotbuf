@@ -210,7 +210,7 @@ message SearchRequest {
           V1 = 1;
           V2 = 1;
        }
-     };" 4 10)
+     };" 6 11)
   )
 (deftest verify-that-empty-enum-causes-error
     (failed-context-parse-block 
@@ -218,7 +218,7 @@ message SearchRequest {
        syntax=\"proto3\";
        enum E1 {
        }
-     };" 4 10)
+     };" 3 13)
   )
 
 (deftest verify-that-enum-without-zero-causes-error
@@ -238,7 +238,7 @@ message SearchRequest {
          V0 = 0;
          V0 = 1;
        }
-     };" 4 10)
+     };" 5 10)
   )
 
 
