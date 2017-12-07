@@ -48,7 +48,7 @@
   (let [l (first ds)]
     (when (contains? #{:message :enum :field} l) (with-meta {:name (name-of-label l ds)} (meta ds)))))
 
-(defn throw-exception! [m]
+(defn throw-exception! [m msg]
   (let [col-line (meta m)]
     (throw (ParserException. (format "%s is already defined" (:name m))  (:instaparse.gll/start-line col-line) (:instaparse.gll/start-column col-line)))))
 
@@ -63,7 +63,7 @@
             (map 
               name-of 
               args)))))]
-      (throw-exception! (first res))))
+      (throw-exception! (first res) "")))
 
 (defn intersect? [[[from-1 to-1] [from-2 to-2]]]
   (or 
@@ -84,7 +84,7 @@
 (defn check-reserved-overlap! [all-comb]
   (doseq [c all-comb]
       (when (intersect? c)
-        (throw-exception! (second c)))))
+        (throw-exception! (second c) ""))))
 
 (defn remove-repeated [f]
   (let [r (rest f)]
@@ -132,7 +132,7 @@
   (let [f (filter #(> (val %) 1) (frequencies (map the-fn values)))]
     (when (not (empty? f))
       (let [e (second (filter #(= (-> f first first) (the-fn %)) values))]
-      (throw-exception! (with-meta {:name (second e)} (meta e)))))))
+      (throw-exception! (with-meta {:name (second e)} (meta e)) "")))))
 
 (defn check-duplicate-enum-names! [values] (check-duplicates! values second))
 (defn check-duplicate-enum-values! [values] (check-duplicates! values #(nth % 2)))
@@ -153,8 +153,8 @@
         m (-> args first meta)
         opts (supported-opts-of opts)]
     
-    (when (empty? values) (throw-exception! (with-meta {:name name} m)))
-    (when (not= (-> values first (nth 2)) 0) (throw-exception! (with-meta {:name name} (-> values first meta))))
+    (when (empty? values) (throw-exception! (with-meta {:name name} m) ""))
+    (when (not= (-> values first (nth 2)) 0) (throw-exception! (with-meta {:name name} (-> values first meta)) ""))
     (check-duplicate-enum-names! values)
     (when-not (opts "allow_alias") 
      (check-duplicate-enum-values! values))

@@ -125,13 +125,14 @@ message SearchRequest {
 
 
 
-(defn failed-context-parse-block [text line column] 
+(defn failed-context-parse-block [text msg line column] 
   (let [ast (parse-block text)]
     (if (not (insta/failure? ast)) 
       (try 
         (ast->clj ast)
         (is false "This proto text should fail")
         (catch ParserException e
+         ; (is (= (.getMessage e ) msg))
           (is (= line (.line e)))
           (is (= column (.column e)))
           ))
@@ -170,7 +171,7 @@ message SearchRequest {
          reserved 1;
          reserved 1;
        }
-     };" 5 10)
+     };" "Reserved range 1 to 1 overlaps with already-defined range 1 to 1." 5 10)
   
   (failed-context-parse-block 
     "{
@@ -178,7 +179,7 @@ message SearchRequest {
        message M1 {
          reserved 1 to 10, 5 to 15;
        }
-     };" 4 10)
+     };" "Reserved range 5 to 15 overlaps with already-defined range 5 to 15." 4 10)
   (failed-context-parse-block 
     "{
        syntax=\"proto3\";
@@ -186,7 +187,7 @@ message SearchRequest {
          reserved 1 to 10, 20 to 25;
          string str1 = 5;
        }
-     };" 5 10)
+     };" "Field \"str1\" uses reserved number 5." 5 10)
   (failed-context-parse-block 
     "{
        syntax=\"proto3\";
@@ -194,7 +195,7 @@ message SearchRequest {
          string str1 = 5;
          string str2 = 5;
        }
-     };" 5 10)
+     };" "Field number 5 has already been used in \"M1\" by field \"str1\"." 5 10)
   (failed-context-parse-block 
     "{
        syntax=\"proto3\";
@@ -202,7 +203,7 @@ message SearchRequest {
          reserved 5 to max;
          string str1 = 1000;
        }
-     };" 5 10)
+     };" "Field \"str1\" uses reserved number 1000." 5 10)
   )
 
 (deftest verify-that-19000-to-19999-cannot-be-used
@@ -212,7 +213,7 @@ message SearchRequest {
        message M1 {
          string str1 = 19000;
        }
-     };" 4 10)
+     };" "Field numbers 19000 through 19999 are reserved for the protocol buffer library implementation." 4 10)
   )
 
 (deftest verify-that-enum-with-same-value-causes-error
@@ -224,7 +225,7 @@ message SearchRequest {
           V1 = 1;
           V2 = 1;
        }
-     };" 6 11)
+     };" "\"E1.V2\" uses the same enum value as \"E1.V1\". If this is intended, set 'option allow_alias = true;' to the enum definition." 6 11)
   )
 
 (deftest verify-that-allow-alias-work
@@ -246,7 +247,7 @@ message SearchRequest {
        syntax=\"proto3\";
        enum E1 {
        }
-     };" 3 13)
+     };" "Enums must contain at least one value." 3 13)
   )
 
 (deftest verify-that-enum-without-zero-causes-error
@@ -256,7 +257,7 @@ message SearchRequest {
        enum E1 {
          V1 = 1;
        }
-     };" 4 10)
+     };" "The first enum value must be zero in proto3." 4 10)
   )
 (deftest verify-that-enum-with-same-name-causes-error
     (failed-context-parse-block 
@@ -266,7 +267,7 @@ message SearchRequest {
          V0 = 0;
          V0 = 1;
        }
-     };" 5 10)
+     };" "\"V0\" is already defined in \"E1\"." 5 10)
   )
 
 
