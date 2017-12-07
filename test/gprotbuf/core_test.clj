@@ -122,6 +122,9 @@ message SearchRequest {
     (when (not (insta/failure? ast)) 
       (ast->clj ast))))
 
+
+
+
 (defn failed-context-parse-block [text line column] 
   (let [ast (parse-block text)]
     (if (not (insta/failure? ast)) 
@@ -212,6 +215,20 @@ message SearchRequest {
        }
      };" 6 11)
   )
+
+(deftest verify-that-allow-alias-work
+    (successful-parse-block 
+    "{
+       syntax=\"proto3\";
+       enum E1 {
+          allow_alias = true;
+          V0 = 0;
+          V1 = 1;
+          V2 = 1;
+       }
+     };")
+  )
+
 (deftest verify-that-empty-enum-causes-error
     (failed-context-parse-block 
     "{

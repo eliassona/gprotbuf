@@ -129,16 +129,27 @@
 (defn check-duplicate-enum-names! [values] (check-duplicates! values second))
 (defn check-duplicate-enum-values! [values] (check-duplicates! values #(nth % 2)))
 
+(def supported-enum-opts #{"allow_alias"}) 
+
+(defn supported-opts-of [opts]
+  (let [opt-map (into {} (mapv (comp vec rest) opts))]
+    #_(when-not (clojure.set/subset? (-> keys set) supported-enum-opts)
+       (throw-exception! (with-meta {:name :todo} (meta opts))))
+    opt-map))
+
 (defn check-enum-values [& args]
   (let [body (second args)
         values (filter #(= (first %) :enumField) body)
         opts (filter #(= (first %) :option) body)
         name (-> args first second)
-        m (-> args first meta)]
+        m (-> args first meta)
+        opts (supported-opts-of opts)]
+    
     (when (empty? values) (throw-exception! (with-meta {:name name} m)))
     (when (not= (-> values first (nth 2)) 0) (throw-exception! (with-meta {:name name} (-> values first meta))))
     (check-duplicate-enum-names! values)
-    (check-duplicate-enum-values! values)
+    (when-not (opts "allow_alias") 
+     (check-duplicate-enum-values! values))
     [name body]
   ))
 
