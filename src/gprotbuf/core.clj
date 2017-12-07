@@ -1,8 +1,8 @@
 (ns gprotbuf.core
   (:use [clojure.pprint])
   (:require [instaparse.core :as insta])
-  (:import [com.example.tutorial AddressBookProtos$Person AddressBookProtos$Person$PhoneNumber ASimpleTest$Udr]
-           [com.google.protobuf ByteString]
+  (:import #_[com.example.tutorial AddressBookProtos$Person AddressBookProtos$Person$PhoneNumber ASimpleTest$Udr]
+           #_[com.google.protobuf ByteString]
            [gprotbuf.exception ParserException]))
 
 (defmacro dbg [body]
@@ -86,9 +86,17 @@
       (when (intersect? c)
         (throw-exception! (second c)))))
 
+(defn remove-repeated [f]
+  (let [r (rest f)]
+    (with-meta 
+      (conj
+        (if (= (first r) "repeated")
+          (rest r)
+          r) :field) (meta f))))
+
 (defn check-field-tags! [fields reserved]
   (loop [reserved reserved
-         fields fields]
+         fields (map remove-repeated fields)]
     (when-let [f (first fields)]
       (let [range-of (range-of (meta f))
             tag (range-of (nth f 3))]
@@ -163,7 +171,7 @@
    :decimalDigit read-string
    :decimalLit (fn [& args] (read-string (apply str args)))
 ;   :enumName identity
-   :enumType (fn [& args] (apply str args))
+   :enumType second
    :messageBody check-name-and-reserved-clash
    :intLit identity
    :charValue identity

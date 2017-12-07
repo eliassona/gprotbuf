@@ -150,6 +150,17 @@ message SearchRequest {
      };"))
 
 
+(deftest repeated-type
+    (successful-parse-block 
+    "{
+       syntax=\"proto3\";
+       message M1 {
+         string str = 1;
+         repeated uint32 intList = 2;
+       }
+     };"))
+
+
 
 (deftest verify-that-reserved-cannot-overlap 
   (failed-context-parse-block 
