@@ -36,7 +36,7 @@
 (defmethod comment-replace :single-comment [state ch]
   (condp = ch
    \newline [:idle ch]
-   [state ch])
+   [state " "])
   )
 
 (defmethod comment-replace :multi-comment [state ch]
@@ -105,7 +105,7 @@
 
 (defn throw-exception! [m msg]
   (let [col-line (meta m)]
-    (throw (ParserException. (format "%s is already defined" (:name m))  (:instaparse.gll/start-line col-line) (:instaparse.gll/start-column col-line)))))
+    (throw (ParserException. (format "%s. %s" (:name m) msg)  (:instaparse.gll/start-line col-line) (:instaparse.gll/start-column col-line)))))
 
 (defn check-name-clash [& args]
   (when-let [res  
@@ -139,7 +139,7 @@
 (defn check-reserved-overlap! [all-comb]
   (doseq [c all-comb]
       (when (intersect? c)
-        (throw-exception! (second c) ""))))
+        (throw-exception! (second (dbg c)) ""))))
 
 (defn remove-repeated [f]
   (let [r (rest f)]
@@ -183,14 +183,15 @@
    args)
 
 
-(defn check-duplicates! [values the-fn]
+(defn check-duplicates! [enum-name values the-fn]
   (let [f (filter #(> (val %) 1) (frequencies (map the-fn values)))]
     (when (not (empty? f))
-      (let [e (second (filter #(= (-> f first first) (the-fn %)) values))]
-      (throw-exception! (with-meta {:name (second e)} (meta e)) "")))))
+      (let [e (second (filter #(= (-> f first first) (the-fn %)) values))
+            v (second e)]
+        (throw-exception! (with-meta {:name v} (meta e)) (format "\"%s\" is already defined in \"%s\"." v enum-name ))))))
 
-(defn check-duplicate-enum-names! [values] (check-duplicates! values second))
-(defn check-duplicate-enum-values! [values] (check-duplicates! values #(nth % 2)))
+(defn check-duplicate-enum-names! [enum-name values] (check-duplicates! enum-name values second))
+(defn check-duplicate-enum-values! [enum-name values] (check-duplicates! enum-name values #(nth % 2)))
 
 (def supported-enum-opts #{"allow_alias"}) 
 
@@ -201,18 +202,19 @@
     opt-map))
 
 (defn check-enum-values [& args]
-  (let [body (second args)
+  (let [enum-name (-> args first second)
+        body (second args)
         values (filter #(= (first %) :enumField) body)
         opts (filter #(= (first %) :option) body)
         name (-> args first second)
         m (-> args first meta)
         opts (supported-opts-of opts)]
     
-    (when (empty? values) (throw-exception! (with-meta {:name name} m) ""))
-    (when (not= (-> values first (nth 2)) 0) (throw-exception! (with-meta {:name name} (-> values first meta)) ""))
-    (check-duplicate-enum-names! values)
+    (when (empty? values) (throw-exception! (with-meta {:name name} m) "Enums must contain at least one value."))
+    (when (not= (-> values first (nth 2)) 0) (throw-exception! (with-meta {:name name} (-> values first meta)) "The first enum value must be zero in proto3."))
+    (check-duplicate-enum-names! enum-name values)
     (when-not (opts "allow_alias") 
-     (check-duplicate-enum-values! values))
+     (check-duplicate-enum-values! enum-name values))
     [name body]
   ))
 

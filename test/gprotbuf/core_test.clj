@@ -12,9 +12,11 @@
   (is (= "" (clean-comment "")))
   (is (= "1" (clean-comment "1")))
   (is (= "12   " (clean-comment "12 //")))
-  ;(is (= "12       " (clean-comment "12 //asdf")))
-  ;(is (= "12         " (clean-comment "12 /*asdf*/")))
+  (is (= "12       " (clean-comment "12 //asdf")))
+  (is (= "12         " (clean-comment "12 /*asdf*/")))
   (is (= "12       \n  " (clean-comment "12 /*asdf\n*/")))
+  (is (= "12 \"anders\"" (clean-comment "12 \"anders\"")))
+  
   )
 
 
@@ -142,7 +144,7 @@ message SearchRequest {
         (ast->clj ast)
         (is false "This proto text should fail")
         (catch ParserException e
-          ;(is (= (.getMessage e ) msg))
+          (is (= (.getMessage e ) msg))
           (is (= line (.line e)))
           (is (= column (.column e)))
           ))
@@ -235,7 +237,7 @@ message SearchRequest {
           V1 = 1;
           V2 = 1;
        }
-     };" "\"E1.V2\" uses the same enum value as \"E1.V1\". If this is intended, set 'option allow_alias = true;' to the enum definition." 6 11)
+     };" "V2. \"V2\" is already defined in \"E1\"." 6 11)
   )
 
 (deftest verify-that-allow-alias-work
@@ -257,7 +259,7 @@ message SearchRequest {
        syntax=\"proto3\";
        enum E1 {
        }
-     };" "Enums must contain at least one value." 3 13)
+     };" "E1. Enums must contain at least one value." 3 13)
   )
 
 (deftest verify-that-enum-without-zero-causes-error
@@ -267,7 +269,7 @@ message SearchRequest {
        enum E1 {
          V1 = 1;
        }
-     };" "The first enum value must be zero in proto3." 4 10)
+     };" "E1. The first enum value must be zero in proto3." 4 10)
   )
 (deftest verify-that-enum-with-same-name-causes-error
     (failed-context-parse-block 
@@ -277,7 +279,7 @@ message SearchRequest {
          V0 = 0;
          V0 = 1;
        }
-     };" "\"V0\" is already defined in \"E1\"." 5 10)
+     };" "V0. \"V0\" is already defined in \"E1\"." 5 10)
   )
 
 
