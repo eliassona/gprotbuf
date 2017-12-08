@@ -42,7 +42,7 @@
 (defmethod comment-replace :multi-comment [state ch]
   (condp = ch
    \* [:star " "]
-   \newline [:star ch]
+   \newline [state ch]
    [state " "])
   )
 
@@ -107,7 +107,7 @@
   (let [col-line (meta m)]
     (throw (ParserException. (format "%s. %s" (:name m) msg)  (:instaparse.gll/start-line col-line) (:instaparse.gll/start-column col-line)))))
 
-(defn check-name-clash [& args]
+(defn check-name-clash [name args]
   (when-let [res  
     (first
       (filter 
@@ -118,7 +118,8 @@
             (map 
               name-of 
               args)))))]
-      (throw-exception! (first res) "")))
+    (let [m (first res)]
+      (throw-exception! (with-meta m (-> res first meta)) (format "\"%s\" is already defined in \"%s\"." (:name m) name)))))
 
 (defn intersect? [[[from-1 to-1] [from-2 to-2]]]
   (or 
@@ -136,10 +137,10 @@
                     :reserved identity
                     :ranges (fn [& args] args)})
 
-(defn check-reserved-overlap! [all-comb]
+(defn check-reserved-overlap! [name all-comb]
   (doseq [c all-comb]
       (when (intersect? c)
-        (throw-exception! (second (dbg c)) ""))))
+        (throw-exception! (with-meta {:name name} (meta (second c))) "Fields overlap."))))
 
 (defn remove-repeated [f]
   (let [r (rest f)]
@@ -149,20 +150,20 @@
           (rest r)
           r) :field) (meta f))))
 
-(defn check-field-tags! [fields reserved]
+(defn check-field-tags! [name fields reserved]
   (loop [reserved reserved
          fields (map remove-repeated fields)]
     (when-let [f (first fields)]
       (let [range-of (range-of (meta f))
             tag (range-of (nth f 3))]
-        (check-reserved-overlap! 
+        (check-reserved-overlap! name
           (for [x (conj reserved tag-reserved-ranged)
                 y [tag]]
             [x y]))
         (recur (conj reserved tag) (rest fields)))))) 
   
 
-(defn check-reserved-clash [& args]
+(defn check-reserved-clash [name args]
   (let [nth-fn #(nth % 2)
         f-fn (fn [v] (filter #(= (first %) v) args))
         reserved (f-fn :reserved)
@@ -172,14 +173,14 @@
                           y ranges
                           :when (not= (nth-fn x) (nth-fn y))]
                       [x y])]
-    (check-reserved-overlap! all-comb)
-    (check-field-tags! fields ranges)    
+    (check-reserved-overlap! name all-comb)
+    (check-field-tags! name fields ranges)    
     ))
       
 
-(defn check-name-and-reserved-clash [& args]
-  (apply check-name-clash args)
-  (apply check-reserved-clash args)
+(defn check-name-and-reserved-clash [name args]
+  (check-name-clash name args)
+  (check-reserved-clash name args)
    args)
 
 
@@ -218,6 +219,9 @@
     [name body]
   ))
 
+(defn check-message [message-name args]
+    (check-name-and-reserved-clash message-name (second args)) 
+    (conj args :message))
 
 (def ast->clj-map 
   {
@@ -229,7 +233,8 @@
    :decimalLit (fn [& args] (read-string (apply str args)))
 ;   :enumName identity
    :enumType second
-   :messageBody check-name-and-reserved-clash
+   :messageBody (fn [& args] args) 
+   :message (fn [& args] (check-message (first args) args))
    :intLit identity
    :charValue identity
    :strLit (fn [& args] (apply str args))
@@ -240,14 +245,13 @@
    :oneofName identity
    :oneofField (fn [& args] args)
    :messageName identity
-   :message (fn [& args] (conj args :message))
    :type identity
    :fieldName identity
    :fieldNumber identity
    :optionName identity
    :enum check-enum-values
    :enumBody (fn [& args] args)
-   :proto (fn [& args] (apply check-name-and-reserved-clash (map second (filter #(= (first %) :topLevelDef) args))))
+   :proto (fn [& args] (check-name-and-reserved-clash "" (map second (filter #(= (first %) :topLevelDef) args))))
 ;   :field (fn [& args] (reduce (fn [m [k v]] (assoc m k v)) {} args))
    })
 
