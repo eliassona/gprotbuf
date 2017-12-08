@@ -8,6 +8,16 @@
   )
 
 
+(deftest verify-clean-comment
+  (is (= "" (clean-comment "")))
+  (is (= "1" (clean-comment "1")))
+  (is (= "12   " (clean-comment "12 //")))
+  ;(is (= "12       " (clean-comment "12 //asdf")))
+  ;(is (= "12         " (clean-comment "12 /*asdf*/")))
+  (is (= "12       \n  " (clean-comment "12 /*asdf\n*/")))
+  )
+
+
 (deftest an-import
   (is  (not (insta/failure? (parser "import public \"other.proto\";" :start :import)))))
 
@@ -132,7 +142,7 @@ message SearchRequest {
         (ast->clj ast)
         (is false "This proto text should fail")
         (catch ParserException e
-         ; (is (= (.getMessage e ) msg))
+          ;(is (= (.getMessage e ) msg))
           (is (= line (.line e)))
           (is (= column (.column e)))
           ))

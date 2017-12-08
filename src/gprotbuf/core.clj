@@ -13,9 +13,64 @@
 
 ;;-----------parser----------------------------------
 
+#_(defn clean-comment [text]
+   (.replaceAll 
+     text "//.*|(\"(?:\\\\[^\"]|\\\\\"|.)*?\")|(?s)/\\*.*?\\*/", "$1 "))
+
+(defmulti comment-replace (fn [state ch] state))
+
+(defmethod comment-replace :idle [state ch]
+  (condp = ch
+   \/ [:slash " "]
+   \" [:string ch]
+   [state ch])
+  )
+
+(defmethod comment-replace :slash [state ch]
+  (condp = ch
+   \/ [:single-comment " "]
+   \* [:multi-comment " "]
+   [:idle ch])
+  )
+
+(defmethod comment-replace :single-comment [state ch]
+  (condp = ch
+   \newline [:idle ch]
+   [state ch])
+  )
+
+(defmethod comment-replace :multi-comment [state ch]
+  (condp = ch
+   \* [:star " "]
+   \newline [:star ch]
+   [state " "])
+  )
+
+(defmethod comment-replace :star [state ch]
+  (condp = ch
+   \/ [:idle " "]
+   [state " "])
+  )
+
+(defmethod comment-replace :string [state ch]
+  (condp = ch
+   \\ [:backslash ch]
+   \" [:idle ch]
+   [state ch])
+  )
+
+(defmethod comment-replace :backslash [state ch]
+  [:string ch])
+
 (defn clean-comment [text]
-  (.replaceAll 
-    text "//.*|(\"(?:\\\\[^\"]|\\\\\"|.)*?\")|(?s)/\\*.*?\\*/", "$1 "))
+  (loop [t text
+         state :idle
+         res []]
+    (if (not (empty? t))
+      (let [[state ch] (comment-replace state (first t))]
+        (recur (rest t) state (conj res ch)) )
+      (apply str res))))
+    
 
 
 (def parser (insta/parser (clojure.java.io/resource "googleprotocolbuffers.bnf")))
