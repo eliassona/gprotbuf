@@ -27,7 +27,7 @@
 
 (defn name-of-label [l ds]
   (condp = l
-    :field (nth ds 2)
+    :field (nth ds (if (= (second ds) "repeated") 3 2))
     :message (second ds)
     :enum (second ds)))
 
@@ -39,6 +39,10 @@
   (let [col-line (meta m)]
     (assert col-line)
     (throw (ParserException. (format "%s. %s" (:name m) msg)  (:instaparse.gll/start-line col-line) (:instaparse.gll/start-column col-line)))))
+
+
+(defn field-of [kw args]
+  (filter #(= (first %) kw) args))
 
 (defn check-name-clash [name args]
   (when-let [res  
@@ -95,11 +99,12 @@
             [x y]))
         (recur (conj reserved tag) (rest fields)))))) 
 
+
 (defn check-reserved-clash [name args]
   (let [nth-fn #(nth % 2)
-        f-fn (fn [v] (filter #(= (first %) v) args))
-        reserved (f-fn :reserved)
-        fields (f-fn :field)
+        ;f-fn (fn [v] (filter #(= (first %) v) args))
+        reserved (field-of :reserved args)
+        fields (field-of :field args)
         ranges (map-indexed (fn [i v] (conj v i)) (mapcat #(insta/transform (res->clj (meta %)) %) reserved))
         all-comb (for [x ranges
                           y ranges
@@ -110,11 +115,21 @@
 
 (def disable-check? (when (System/getProperty "gprotbuf.disable-check") true))
 
+(def proto-types #{"double" "float" "int32" "int64" "uint32" "uint64" 
+                   "sint32" "sint64" "fixed32" "fixed64"
+                   "sfixed32" "sfixed64" "bool" "string" "bytes"})
+
+(defn check-types [name args]
+  (doseq [f (map remove-repeated (->> args (field-of :field)))]
+    (when-not (contains? proto-types (second f))
+      (throw-exception! (with-meta {:name name} (meta f)) (format "\"%s\" is not defined." (second f))))))
+
 (defn check-name-and-reserved-clash [name args]
-  (when-not disable-check? 
+  (when-not disable-check?
+    (check-types name args)
     (check-name-clash name args)
     (check-reserved-clash name args))
-   args)
+  args)
 
 (defn check-duplicates! [enum-name values the-fn]
   (let [f (filter #(> (val %) 1) (frequencies (map the-fn values)))]
@@ -161,7 +176,6 @@
 
 (defn check-message [message-name args]
   (let [fields (second args)
-        ;TODO copy meta!!!
         one-ofs (one-of-of fields)
         ]
     (check-name-and-reserved-clash message-name (concat one-ofs (second args))) 

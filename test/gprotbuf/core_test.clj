@@ -118,9 +118,10 @@ message SearchRequest {
 
 
 (defn successful-parse-block [text] 
-  (let [ast (parse-block text)]
-    (when (not (insta/failure? ast)) 
-      (ast->clj ast))))
+  (is 
+    (let [ast (parse-block text)]
+      (when (not (insta/failure? ast)) 
+        (ast->clj ast)))))
 
 
 
@@ -174,7 +175,8 @@ message SearchRequest {
        syntax=\"proto3\";
        message M1 {
          string str = 1;
-         repeated uint32 intList = 2;
+         repeated uint32 intList1 = 2;
+         repeated uint32 intList2 = 3;
        }
      };"))
 
@@ -364,6 +366,20 @@ message SearchRequest {
        }
      };" "Message1. Fields overlap." 7 10)
   )
+
+(deftest verify-unknown-types-causes-error
+    (failed-context-parse-block
+    "{
+       syntax=\"proto3\";
+       message Message1 {
+          unknownType u = 1;
+       }
+
+     };
+     "      
+      "Message1. \"unknownType\" is not defined." 4 11))
+
+
 
 
 (def mz-test 
