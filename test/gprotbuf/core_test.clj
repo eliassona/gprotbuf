@@ -156,7 +156,7 @@ message SearchRequest {
          Anders  = 4;
          }
          Person person = 5;
-       },
+       }
      };"))
 
 (deftest reserved-to

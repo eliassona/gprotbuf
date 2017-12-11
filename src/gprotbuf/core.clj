@@ -120,19 +120,24 @@
                    "sfixed32" "sfixed64" "bool" "string" "bytes"})
 
 
-(defn valid-type? [t]
-  (contains? proto-types t))
+(defn valid-type? [t rel-types]
+  (or 
+    (contains? proto-types t)
+    (contains? rel-types t)))
+
+(defn relative-type? [t]
+  (<= (.indexOf t ".") 0))
 
 (defn check-types [name args]
-  (doseq [f (map remove-repeated (->> args (field-of :field)))]
-    (when-not (valid-type? (second f))
-      (throw-exception! (with-meta {:name name} (meta f)) (format "\"%s\" is not defined." (second f))))))
+  (let [rel-types (into #{} (map second (filter #(contains? #{:enum :message} (first %)) args)))]
+    (doseq [f (map remove-repeated (->> args (field-of :field)))]
+      (let [t (second f)]
+        (when-not (and (relative-type? t) (valid-type? t rel-types))
+          (throw-exception! (with-meta {:name name} (meta f)) (format "\"%s\" is not defined." t)))))))
 
 (defn check-name-and-reserved-clash [name args]
-  (when-not disable-check?
-    (check-types name args)
-    (check-name-clash name args)
-    (check-reserved-clash name args))
+  (check-name-clash name args)
+  (check-reserved-clash name args)
   args)
 
 (defn check-duplicates! [enum-name values the-fn]
@@ -154,7 +159,7 @@
     opt-map))
 
 (defn check-enum-values [& args]
-  (let [enum-name (-> (dbg args) first second)
+  (let [enum-name (-> args first second)
         body (second args)
         values (filter #(= (first %) :enumField) body)
         opts (filter #(= (first %) :option) body)
@@ -181,9 +186,15 @@
 (defn check-message [message-name args]
   (let [fields (second args)
         one-ofs (one-of-of fields)
+        fields (concat one-ofs (second args))
         ]
-    (check-name-and-reserved-clash message-name (concat one-ofs (second args))) 
+    (check-types message-name fields)
+    (check-name-and-reserved-clash message-name fields) 
     (conj args :message)))
+
+(defn type-str-of [& t]
+  ;this is not well made
+  (str (apply str (butlast t)) (-> t last second)))
 
 (def ast->clj-map 
   {
@@ -192,7 +203,7 @@
    :hexLit (fn [x y z] (read-string (str x y z)))
    :decimalDigit read-string
    :decimalLit (fn [& args] (read-string (apply str args)))
-   :enumType second
+   :enumType type-str-of
    :messageBody (fn [& args] args) 
    :message (fn [& args] (check-message (first args) args))
    :intLit identity
