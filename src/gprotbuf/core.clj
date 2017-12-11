@@ -119,9 +119,13 @@
                    "sint32" "sint64" "fixed32" "fixed64"
                    "sfixed32" "sfixed64" "bool" "string" "bytes"})
 
+
+(defn valid-type? [t]
+  (contains? proto-types t))
+
 (defn check-types [name args]
   (doseq [f (map remove-repeated (->> args (field-of :field)))]
-    (when-not (contains? proto-types (second f))
+    (when-not (valid-type? (second f))
       (throw-exception! (with-meta {:name name} (meta f)) (format "\"%s\" is not defined." (second f))))))
 
 (defn check-name-and-reserved-clash [name args]
@@ -150,7 +154,7 @@
     opt-map))
 
 (defn check-enum-values [& args]
-  (let [enum-name (-> args first second)
+  (let [enum-name (-> (dbg args) first second)
         body (second args)
         values (filter #(= (first %) :enumField) body)
         opts (filter #(= (first %) :option) body)
