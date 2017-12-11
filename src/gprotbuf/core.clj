@@ -1,6 +1,7 @@
 (ns gprotbuf.core
   (:use [clojure.pprint])
-  (:require [instaparse.core :as insta])
+  (:require [instaparse.core :as insta]
+            [commentclean.core :as comment])
   (:import #_[com.example.tutorial AddressBookProtos$Person AddressBookProtos$Person$PhoneNumber ASimpleTest$Udr]
            #_[com.google.protobuf ByteString]
            [gprotbuf.exception ParserException]))
@@ -10,88 +11,19 @@
      (println "dbg:" '~body "=" x#)
      x#))
 
-
 ;;-----------parser----------------------------------
-
-#_(defn clean-comment [text]
-   (.replaceAll 
-     text "//.*|(\"(?:\\\\[^\"]|\\\\\"|.)*?\")|(?s)/\\*.*?\\*/", "$1 "))
-
-(defmulti comment-replace (fn [state ch] state))
-
-(defmethod comment-replace :idle [state ch]
-  (condp = ch
-   \/ [:slash " "]
-   \" [:string ch]
-   [state ch])
-  )
-
-(defmethod comment-replace :slash [state ch]
-  (condp = ch
-   \/ [:single-comment " "]
-   \* [:multi-comment " "]
-   [:idle ch])
-  )
-
-(defmethod comment-replace :single-comment [state ch]
-  (condp = ch
-   \newline [:idle ch]
-   [state " "])
-  )
-
-(defmethod comment-replace :multi-comment [state ch]
-  (condp = ch
-   \* [:star " "]
-   \newline [state ch]
-   [state " "])
-  )
-
-(defmethod comment-replace :star [state ch]
-  (condp = ch
-   \/ [:idle " "]
-   [state " "])
-  )
-
-(defmethod comment-replace :string [state ch]
-  (condp = ch
-   \\ [:backslash ch]
-   \" [:idle ch]
-   [state ch])
-  )
-
-(defmethod comment-replace :backslash [state ch]
-  [:string ch])
-
-(defn clean-comment [text]
-  (loop [t text
-         state :idle
-         res []]
-    (if (not (empty? t))
-      (let [[state ch] (comment-replace state (first t))]
-        (recur (rest t) state (conj res ch)) )
-      (apply str res))))
-    
-
 
 (def parser (insta/parser (clojure.java.io/resource "googleprotocolbuffers.bnf")))
 
-(defn parse [text] (-> text clean-comment (parser :start :proto)))
+(defn parse [text] (-> text comment/clean (parser :start :proto)))
 
 (defn parse-block [text]
-  (let [ct (clean-comment text)]
+  (let [ct (comment/clean text)]
     (insta/add-line-and-column-info-to-metadata ct (parser ct :start :block, :partial true))))
 
-(defn syntax? [text] (not (insta/failure? (insta/parse parser (clean-comment text) :start :proto :partial true))))
+(defn syntax? [text] (not (insta/failure? (insta/parse parser (comment/clean text) :start :proto :partial true))))
 
 ;;---------------------------------------------------------------------------------------------------------
-
-(def wire-types 
-  {
-   #{"int32", "int64", "uint32", "uint64", "sint32", "sint64", "bool", "enum"} 0
-   #{"fixed64", "sfixed64", "double"} 1
-   #{"string", "bytes" :message "repeated"} 2
-   #{"fixed32", "sfixed32", "float"} 5
-   })
 
 (defn name-of-label [l ds]
   (condp = l
@@ -105,6 +37,7 @@
 
 (defn throw-exception! [m msg]
   (let [col-line (meta m)]
+    (assert col-line)
     (throw (ParserException. (format "%s. %s" (:name m) msg)  (:instaparse.gll/start-line col-line) (:instaparse.gll/start-column col-line)))))
 
 (defn check-name-clash [name args]
@@ -161,7 +94,6 @@
                 y [tag]]
             [x y]))
         (recur (conj reserved tag) (rest fields)))))) 
-  
 
 (defn check-reserved-clash [name args]
   (let [nth-fn #(nth % 2)
@@ -174,15 +106,12 @@
                           :when (not= (nth-fn x) (nth-fn y))]
                       [x y])]
     (check-reserved-overlap! name all-comb)
-    (check-field-tags! name fields ranges)    
-    ))
-      
+    (check-field-tags! name fields ranges)))
 
 (defn check-name-and-reserved-clash [name args]
   (check-name-clash name args)
   (check-reserved-clash name args)
    args)
-
 
 (defn check-duplicates! [enum-name values the-fn]
   (let [f (filter #(> (val %) 1) (frequencies (map the-fn values)))]
@@ -219,19 +148,29 @@
     [name body]
   ))
 
+(defn one-of-of-with-meta [one-of]
+  (with-meta (-> one-of rest rest) (meta one-of)))
+
+(defn one-of-of [fields]
+  (let [one-ofs (filter #(= (first %) :oneof) fields)
+        one-ofs (mapcat one-of-of-with-meta one-ofs)]
+    (map #(with-meta (cons :field %) (meta %)) one-ofs)))
+
 (defn check-message [message-name args]
-    (check-name-and-reserved-clash message-name (second args)) 
-    (conj args :message))
+  (let [fields (second args)
+        ;TODO copy meta!!!
+        one-ofs (one-of-of fields)
+        ]
+    (check-name-and-reserved-clash message-name (concat one-ofs (second args))) 
+    (conj args :message)))
 
 (def ast->clj-map 
   {
    :ident (fn [& args] (apply str args))
-;   :messageName identity
    :hexDigit identity
    :hexLit (fn [x y z] (read-string (str x y z)))
    :decimalDigit read-string
    :decimalLit (fn [& args] (read-string (apply str args)))
-;   :enumName identity
    :enumType second
    :messageBody (fn [& args] args) 
    :message (fn [& args] (check-message (first args) args))
@@ -252,7 +191,6 @@
    :enum check-enum-values
    :enumBody (fn [& args] args)
    :proto (fn [& args] (check-name-and-reserved-clash "" (map second (filter #(= (first %) :topLevelDef) args))))
-;   :field (fn [& args] (reduce (fn [m [k v]] (assoc m k v)) {} args))
    })
 
 (defn ast->clj [ast]
@@ -263,8 +201,7 @@
 (defn parse [text]
   (-> text (parser :start :proto) ast->clj))
 
-
-
+;;----------------------------------------------------------------------------------------------------------------------
 
 (comment
 (def b (AddressBookProtos$Person/newBuilder))

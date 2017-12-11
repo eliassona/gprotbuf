@@ -7,28 +7,6 @@
   (:import [gprotbuf.exception ParserException])
   )
 
-(defn verify-newlines [x1 x2]
-  (is (= (count x1) (count x2)))
-  (map (fn [[v1 v2]] (is (= (count v1) (count v2)))) x1 x2))
-  
-
-(defn verify-comment [uncommented-text commented-text]
-  (is (= (count commented-text) (count uncommented-text)))
-  (verify-newlines (.split uncommented-text "\n") (.split commented-text "\n"))
-  (is (= uncommented-text (clean-comment commented-text))))
-
-(deftest verify-clean-comment
-  (verify-comment "" "")
-  (verify-comment "1" "1")
-  (verify-comment "12   " "12 //")
-  (verify-comment "12       " "12 //asdf")
-  (verify-comment "12         " "12 /*asdf*/")
-  (verify-comment "12       \n  " "12 /*asdf\n*/")
-  (verify-comment "12 \"anders\"" "12 \"anders\"")
-  (verify-comment "1\n2\n3" "1\n2\n3")
-  (verify-comment "1\n  \n\n\n  2\n3" "1\n/*\n\n\n*/2\n3")
-)
-
 
 (deftest an-import
   (is  (not (insta/failure? (parser "import public \"other.proto\";" :start :import)))))
@@ -321,6 +299,54 @@ message SearchRequest {
      };" "str1. \"str1\" is already defined in \"Message1\"." 4 10)
   )
 
+(deftest verify-that-oneof-field-same-name-causes-error
+    (failed-context-parse-block 
+    "{
+       syntax=\"proto3\";
+       message Message1 {
+         oneof One {
+           string str1 = 1;
+           string str1 = 2;
+         }
+       }
+     };" "str1. \"str1\" is already defined in \"Message1\"." 5 12)
+  )
+(deftest verify-that-oneof-field-same-name-as-in-message-causes-error
+    (failed-context-parse-block 
+    "{
+       syntax=\"proto3\";
+       message Message1 {
+         oneof One {
+           string str1 = 1;
+         }
+         string str1 = 2;
+       }
+     };" "str1. \"str1\" is already defined in \"Message1\"." 5 12)
+  )
+(deftest verify-that-oneof-field-same-value-causes-error
+    (failed-context-parse-block 
+    "{
+       syntax=\"proto3\";
+       message Message1 {
+         oneof One {
+           string str1 = 1;
+           string str2 = 1;
+         }
+       }
+     };" "Message1. Fields overlap." 6 12)
+  )
+(deftest verify-that-oneof-field-same-value-as-in-message-causes-error
+    (failed-context-parse-block 
+    "{
+       syntax=\"proto3\";
+       message Message1 {
+         oneof One {
+           string str1 = 1;
+         }
+         string str2 = 1;
+       }
+     };" "Message1. Fields overlap." 7 10)
+  )
 
 
 (def mz-test 
