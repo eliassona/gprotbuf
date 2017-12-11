@@ -141,6 +141,23 @@ message SearchRequest {
 (deftest empty-block
   (successful-parse-block "{ syntax=\"proto3\"; };"))
 
+
+(deftest referring-to-new-type
+  (successful-parse-block 
+    "{ 
+       syntax=\"proto3\";
+       message M1 {
+       enum Person {
+         Guran   = 0;
+         Fredrik = 1;
+         Michal  = 2;
+         Ifeyani = 3;
+         Anders  = 4;
+         }
+         Person person = 5;
+       },
+     };"))
+
 (deftest reserved-to
     (successful-parse-block 
     "{

@@ -108,9 +108,12 @@
     (check-reserved-overlap! name all-comb)
     (check-field-tags! name fields ranges)))
 
+(def disable-check? (when (System/getProperty "gprotbuf.disable-check") true))
+
 (defn check-name-and-reserved-clash [name args]
-  (check-name-clash name args)
-  (check-reserved-clash name args)
+  (when-not disable-check? 
+    (check-name-clash name args)
+    (check-reserved-clash name args))
    args)
 
 (defn check-duplicates! [enum-name values the-fn]
@@ -145,7 +148,7 @@
     (check-duplicate-enum-names! enum-name values)
     (when-not (opts "allow_alias") 
      (check-duplicate-enum-values! enum-name values))
-    [name body]
+    [:enum name body]
   ))
 
 (defn one-of-of-with-meta [one-of]
