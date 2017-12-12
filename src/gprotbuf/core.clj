@@ -120,19 +120,20 @@
                    "sfixed32" "sfixed64" "bool" "string" "bytes"})
 
 
-(defn valid-type? [t rel-types]
+(defn valid-type? [t rel-types global-types]
   (or 
     (contains? proto-types t)
-    (contains? rel-types t)))
+    (contains? rel-types t)
+    (contains? global-types t)))
 
 (defn relative-type? [t]
   (<= (.indexOf t ".") 0))
 
-(defn check-types [name args]
+(defn check-types [name args global-types]
   (let [rel-types (into #{} (map second (filter #(contains? #{:enum :message} (first %)) args)))]
     (doseq [f (map remove-repeated (->> args (field-of :field)))]
       (let [t (second f)]
-        (when-not (and (relative-type? t) (valid-type? t rel-types))
+        (when-not (valid-type? t rel-types global-types)
           (throw-exception! (with-meta {:name name} (meta f)) (format "\"%s\" is not defined." t)))))))
 
 (defn check-name-and-reserved-clash [name args]
@@ -183,12 +184,12 @@
         one-ofs (mapcat one-of-of-with-meta one-ofs)]
     (map #(with-meta (cons :field %) (meta %)) one-ofs)))
 
-(defn check-message [message-name args]
+(defn check-message [message-name args global-types]
   (let [fields (second args)
         one-ofs (one-of-of fields)
         fields (concat one-ofs (second args))
         ]
-    (check-types message-name fields)
+    (check-types message-name fields global-types)
     (check-name-and-reserved-clash message-name fields) 
     (conj args :message)))
 
@@ -196,7 +197,8 @@
   ;this is not well made
   (str (apply str (butlast t)) (-> t last second)))
 
-(def ast->clj-map 
+
+(defn ast->clj-map [global-types] 
   {
    :ident (fn [& args] (apply str args))
    :hexDigit identity
@@ -205,7 +207,7 @@
    :decimalLit (fn [& args] (read-string (apply str args)))
    :enumType type-str-of
    :messageBody (fn [& args] args) 
-   :message (fn [& args] (check-message (first args) args))
+   :message (fn [& args] (check-message (first args) args global-types))
    :intLit identity
    :charValue identity
    :strLit (fn [& args] (apply str args))
@@ -225,13 +227,56 @@
    :proto (fn [& args] (check-name-and-reserved-clash "" (map second (filter #(= (first %) :topLevelDef) args))))
    })
 
+
+(def ast->names-map 
+  {:decimalDigit identity
+   :messageName identity
+   :enumName identity
+   :ident (fn [& args] (apply str args))})
+
+(defn ast->names [ast]
+    (insta/transform
+    ast->names-map 
+    ast))
+
+(defn q-name-of [name context]
+  (if (empty? context)
+    name
+    (reduce (fn [acc v] (if acc (format "%s.%s" acc v) v)) nil (conj context name)))
+  )
+
+(defn global-types-of
+  ([ast]
+    (let [state (atom #{})]
+      (global-types-of (ast->names ast) [] state)
+      @state))
+  ([ast context state]
+  (cond 
+    (keyword? (first ast))
+      (if (contains? #{:message :enum} (first ast))
+        (let [name (second ast)] 
+          (swap! state conj (q-name-of name context))
+          (global-types-of (rest ast) (conj context name) state))
+        (global-types-of (rest ast) context state)
+        )
+    (instance? java.util.List ast)  
+    (doseq [x ast]
+      (global-types-of x context state)
+    ))))
+
+
+
 (defn ast->clj [ast]
     (insta/transform
-    ast->clj-map 
+    (ast->clj-map (global-types-of ast))
     ast))
+
+
 
 (defn parse [text]
   (-> text (parser :start :proto) ast->clj))
+
+
 
 ;;----------------------------------------------------------------------------------------------------------------------
 

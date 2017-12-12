@@ -278,6 +278,20 @@ message SearchRequest {
      };")
   )
 
+(deftest verify-that-global-types-work
+    (successful-parse-block 
+    "{
+       syntax=\"proto3\";
+       message M1 {
+         message M2 {
+         }
+       }
+       message M3 {
+         M1.M2 m = 1;
+       }
+     };")
+  )
+
 (deftest verify-that-empty-enum-causes-error
     (failed-context-parse-block 
     "{
@@ -286,6 +300,8 @@ message SearchRequest {
        }
      };" "E1. Enums must contain at least one value." 3 13)
   )
+
+
 
 (deftest verify-that-enum-without-zero-causes-error
     (failed-context-parse-block 
@@ -296,6 +312,8 @@ message SearchRequest {
        }
      };" "E1. The first enum value must be zero in proto3." 4 10)
   )
+
+
 (deftest verify-that-enum-with-same-name-causes-error
     (failed-context-parse-block 
     "{
@@ -378,6 +396,28 @@ message SearchRequest {
      };
      "      
       "Message1. \"unknownType\" is not defined." 4 11))
+
+
+(deftest verify-no-global-types
+  (is (= #{} 
+  (global-types-of
+    (parse-block
+      "{
+          syntax=\"proto3\";
+       };"
+      )))))
+(deftest verify-global-types
+  (is (= #{"E1" "M1" "M1.M2" "M1.M2.E2"} 
+  (global-types-of
+    (parse-block
+      "{
+          syntax=\"proto3\";
+          enum E1 {}
+          message M1 { message M2 { string str1 = 1; enum E2 {}}}
+       };"
+      )))))
+
+
 
 
 
