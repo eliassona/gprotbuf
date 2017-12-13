@@ -87,24 +87,35 @@
           (rest r)
           r) :field) (meta f))))
 
+(defn name-and-value-of [f]
+  (condp = (first f)
+    :field 
+    (let [ix (if (= (second f) "repeated")
+               1 
+               0)]
+      [(nth f (+ 2 ix)) (nth f (+ 3 ix))])
+    :enumField [(nth f 1) (nth f 2)]
+    ))
+
 (defn check-field-tags! [name fields reserved]
   (loop [reserved reserved
-         fields (map remove-repeated fields)]
+         fields fields
+         ]
     (when-let [f (first fields)]
       (let [range-of (range-of (meta f))
-            tag (range-of (nth f 3))]
+            tag (-> f name-and-value-of second range-of)]
         (check-reserved-overlap! name
           (for [x (conj reserved tag-reserved-ranged)
                 y [tag]]
             [x y]))
         (recur (conj reserved tag) (rest fields)))))) 
 
+    
 
-(defn check-reserved-clash [name args]
+(defn check-reserved-clash [name args kw]
   (let [nth-fn #(nth % 2)
-        ;f-fn (fn [v] (filter #(= (first %) v) args))
         reserved (field-of :reserved args)
-        fields (field-of :field args)
+        fields (field-of kw args)
         ranges (map-indexed (fn [i v] (conj v i)) (mapcat #(insta/transform (res->clj (meta %)) %) reserved))
         all-comb (for [x ranges
                           y ranges
@@ -112,8 +123,6 @@
                       [x y])]
     (check-reserved-overlap! name all-comb)
     (check-field-tags! name fields ranges)))
-
-(def disable-check? (when (System/getProperty "gprotbuf.disable-check") true))
 
 (def proto-types #{"double" "float" "int32" "int64" "uint32" "uint64" 
                    "sint32" "sint64" "fixed32" "fixed64"
@@ -126,9 +135,6 @@
     (contains? rel-types t)
     (contains? global-types t)))
 
-(defn relative-type? [t]
-  (<= (.indexOf t ".") 0))
-
 (defn check-types [name args global-types]
   (let [rel-types (into #{} (map second (filter #(contains? #{:enum :message} (first %)) args)))]
     (doseq [f (map remove-repeated (->> args (field-of :field)))]
@@ -138,7 +144,7 @@
 
 (defn check-name-and-reserved-clash [name args]
   (check-name-clash name args)
-  (check-reserved-clash name args)
+  (check-reserved-clash name args :field)
   args)
 
 (defn check-duplicates! [enum-name values the-fn]
@@ -167,12 +173,12 @@
         name (-> args first second)
         m (-> args first meta)
         opts (supported-opts-of opts)]
-    
     (when (empty? values) (throw-exception! (with-meta {:name name} m) "Enums must contain at least one value."))
     (when (not= (-> values first (nth 2)) 0) (throw-exception! (with-meta {:name name} (-> values first meta)) "The first enum value must be zero in proto3."))
     (check-duplicate-enum-names! enum-name values)
     (when-not (opts "allow_alias") 
      (check-duplicate-enum-values! enum-name values))
+    (check-reserved-clash name (second args) :enumField)
     [:enum name body]
   ))
 
@@ -299,7 +305,7 @@
   (.setBoolField b false)
   (.setFloatField b 0.0)
   (.setDoubleField b 0.0)
-  (.setF32Field b 2)
+  (.setF32Field b 0)
   (.setF64Field b 0)
   (.setInt32 b 0)
   (.setInt64 b 0)

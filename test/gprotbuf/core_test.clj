@@ -166,6 +166,14 @@ message SearchRequest {
        message M1 {
          reserved 1 to 10, 20 to 30;
        }
+     };")
+    (successful-parse-block 
+    "{
+       syntax=\"proto3\";
+       enum E1 {
+         reserved 1 to 10, 20 to 30;
+         V0 = 0;
+       }
      };"))
 
 
@@ -265,17 +273,29 @@ message SearchRequest {
      };" "V2. \"V2\" is already defined in \"E1\"." 6 11)
   )
 
-(deftest verify-that-allow-alias-work
-    (successful-parse-block 
+(deftest verify-that-enum-with-same-value-causes-error
+    (failed-context-parse-block 
     "{
        syntax=\"proto3\";
        enum E1 {
-          option allow_alias = true;
           V0 = 0;
           V1 = 1;
           V2 = 1;
        }
-     };")
+     };" "V2. \"V2\" is already defined in \"E1\"." 6 11)
+  )
+
+(deftest verify-enum-using-reserved-range-causes-error
+    (failed-context-parse-block 
+    "{
+       syntax=\"proto3\";
+       enum E1 {
+          reserved 1;
+          V0 = 0;
+          V1 = 1;
+          V2 = 2;
+       }
+     };" "E1. Fields overlap." 6 11)
   )
 
 (deftest verify-that-global-types-work
