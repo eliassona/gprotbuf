@@ -65,7 +65,7 @@
 
 (def tag-max 536870911)
 (def tag-reserved-ranged [19000 19999])
-
+(def zero-range [0 0])
 (defn- range-of [m]
   (fn ([v] (with-meta [v v] m))
       ([from _ to] (with-meta [from (if (number? to) to tag-max)] m))))
@@ -97,6 +97,12 @@
     :enumField [(nth f 1) (nth f 2)]
     ))
 
+(defn reserved-of [reserved f]
+  (condp = (first f)
+    :field
+    (conj reserved tag-reserved-ranged zero-range)
+    :enumField reserved))
+
 (defn check-field-tags! [name fields reserved]
   (loop [reserved reserved
          fields fields
@@ -105,7 +111,7 @@
       (let [range-of (range-of (meta f))
             tag (-> f name-and-value-of second range-of)]
         (check-reserved-overlap! name
-          (for [x (conj reserved tag-reserved-ranged)
+          (for [x (reserved-of reserved f)
                 y [tag]]
             [x y]))
         (recur (conj reserved tag) (rest fields)))))) 

@@ -261,6 +261,28 @@ message SearchRequest {
      };" "M1. Fields overlap." #_"Field numbers 19000 through 19999 are reserved for the protocol buffer library implementation." 5 10) ;TODO
   )
 
+(deftest verify-that-19000-to-19999-can-be-used-in-enums
+    (successful-parse-block 
+    "{
+       syntax=\"proto3\";
+       enum E1 {
+          V0 = 0;
+          V1 = 19000;
+          V2 = 19999;
+       }
+     };"))
+
+
+(deftest verify-that-value-0-cannot-be-used
+    (failed-context-parse-block 
+    "{
+       syntax=\"proto3\";
+       message M1 {
+         string str1 = 0;
+       }
+     };" "M1. Fields overlap." 4 10)
+  )
+
 (deftest verify-that-enum-with-same-value-causes-error
     (failed-context-parse-block 
     "{
