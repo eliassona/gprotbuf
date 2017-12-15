@@ -3,7 +3,7 @@
 A Java/Clojure library for parsing Google Protocol Buffers proto3
 
 ## Usage
-###Java
+### Java
 
 Add the gprotbuf jar to your dependencies.
 
@@ -27,7 +27,7 @@ if (!GPBParser.instance().isFailure(ast)) { //do parsing
 
 
 
-###Clojure
+### Clojure
 Add the following line to your leinigen dependencies:
 ```clojure
 [gprotbuf "0.1.0-SNAPSHOT"]
