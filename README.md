@@ -17,8 +17,8 @@ final Object ast = GPBParser.instance().parse("syntax = \"proto3\";
   }
 ");
 
-if (!GPBParser.instance().isFailure(ast)) {
-  System.out.println(GPBParser.instance().transform(ast));
+if (!GPBParser.instance().isFailure(ast)) { //do parsing
+  System.out.println(GPBParser.instance().transform(ast)); //transform/clean the ast and validate structure
 }
 ```
 ```clojure
