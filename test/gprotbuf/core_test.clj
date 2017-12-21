@@ -334,6 +334,17 @@ message SearchRequest {
      };")
   )
 
+(deftest verify-that-packed-works-for-primitive-types
+    (successful-parse-block 
+		"{ 
+		   syntax=\"proto3\";
+		   message Packed {
+		      repeated int32 data = 4 [packed=true];
+		      int32 stop = 3;
+		   }
+		};"))
+
+
 (deftest verify-that-empty-enum-causes-error
     (failed-context-parse-block 
     "{

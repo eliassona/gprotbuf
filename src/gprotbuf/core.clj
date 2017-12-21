@@ -217,10 +217,8 @@
 (defn packed-exists? [field-options]
   (let [opts (insta/transform field-options-map field-options)]
     (when-not (every? known-option? opts)
-      (throw-exception! (with-meta {:name "Options"} (meta field-options)) (format "Unknown option")))
-    (when 
-     (some (fn [[name value]] (and (= name "packed") value)) opts)
-     (throw-exception! (with-meta {:name "Options"} (meta field-options)) (format "[packed = true] can only be specified for repeated primitive fields.")))
+     (throw-exception! (with-meta {:name "Options"} (meta field-options)) (format "Unknown option")))
+    (some (fn [[name value]] (and (= name "packed") value)) (insta/transform field-options-map field-options))
       ))
 
 (defn check-packed [field]
@@ -229,9 +227,12 @@
       (let [pe (packed-exists? (nth field 5))]
         (when-not (primitive-type? (nth field 2))
           (throw-exception! (with-meta {:name "Options"} (meta field)) (format "Unknown option")))))
-    (when (>= (count field) 5)
-      (packed-exists? (nth field 4)))
-      ))
+    (when 
+      (>= (count field) 5) 
+      (let [field-options (nth field 4)]
+        (when 
+          (packed-exists? field-options)
+          (throw-exception! (with-meta {:name "Options"} (meta field-options)) (format "[packed = true] can only be specified for repeated primitive fields.")))))))
 
 (defn check-message [message-name args global-types]
   (let [fields (second args)
