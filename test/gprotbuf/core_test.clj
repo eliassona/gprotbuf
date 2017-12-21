@@ -460,6 +460,52 @@ message SearchRequest {
       )))))
 
 
+(deftest verify-that-packed-only-applies-to-repeated-prim-fields
+  (failed-context-parse-block
+      "{
+       syntax=\"proto3\";
+       message Message1 {
+          bytes b = 1[packed=true];
+       }
+
+     };
+     "      
+        "Options. [packed = true] can only be specified for repeated primitive fields." 4 23)
+  
+  (failed-context-parse-block
+     "{
+       syntax=\"proto3\";
+       message Message1 {
+          int32 b = 1[packed=true];
+       }
+
+     };
+     "      
+       "Options. [packed = true] can only be specified for repeated primitive fields." 4 23)
+  (failed-context-parse-block
+     "{
+       syntax=\"proto3\";
+       message Message1 {
+          int32 b = 1[hej=true];
+       }
+
+     };
+     "      
+       "Options. Unknown option" 4 23)
+  
+  (failed-context-parse-block
+      "{
+       syntax=\"proto3\";
+       message Message1 {
+          Message2 b = 1[hej=true];
+       }
+       message Message2 {}
+
+     };
+     "      
+        "Options. Unknown option" 4 26)
+  )
+
 
 
 

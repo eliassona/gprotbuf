@@ -18,6 +18,7 @@ public class GPBParser {
 	private final IFn isFailure;
 	private final IFn transform;
 	private final IFn parse;
+	private final IFn isPrimitiveType;
 	private final static GPBParser self = new GPBParser();
 	public static final GPBParser instance() {
 		return self;
@@ -31,6 +32,7 @@ public class GPBParser {
 		transform = Clojure.var(GPROTBUF_CORE, "ast->clj");
 		isFailure = Clojure.var(INSTAPARSE_CORE, "failure?");
 		isSyntax = Clojure.var(GPROTBUF_CORE, "syntax?");
+		isPrimitiveType = Clojure.var(GPROTBUF_CORE, "primitive-type?");
 	}
 	
 	/**
@@ -51,6 +53,11 @@ public class GPBParser {
 		return parse.invoke(text);
 	}
 
+	public final boolean isPrimitiveType(final String type) {
+		return (boolean) isPrimitiveType.invoke(type);
+	}
+	
+	
 	/**
 	 * Transform and clean the ast to produce a new ast that is a little easier to navigate.
 	 * Also perform some validation like ensure that tags don't overlap etc.

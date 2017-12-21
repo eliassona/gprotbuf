@@ -130,10 +130,18 @@
     (check-reserved-overlap! name all-comb)
     (check-field-tags! name fields ranges)))
 
-(def proto-types #{"double" "float" "int32" "int64" "uint32" "uint64" 
-                   "sint32" "sint64" "fixed32" "fixed64"
-                   "sfixed32" "sfixed64" "bool" "string" "bytes"})
 
+(def primitive-proto-types #{"double" "float" "int32" "int64" "uint32" "uint64" 
+                             "sint32" "sint64" "fixed32" "fixed64"
+                             "sfixed32" "sfixed64" "bool"})
+
+(def complex-proto-types #{"string" "bytes"})
+
+(def proto-types (into #{} (concat primitive-proto-types complex-proto-types)))
+
+
+(defn primitive-type? [type]
+  (contains? primitive-proto-types type))
 
 (defn valid-type? [t rel-types global-types]
   (or 
@@ -196,11 +204,41 @@
         one-ofs (mapcat one-of-of-with-meta one-ofs)]
     (map #(with-meta (cons :field %) (meta %)) one-ofs)))
 
+
+(def field-options-map 
+  {:fieldOptions (fn [& args ] args)
+   :fieldOption (fn [name value] [name value])})
+
+(def known-options #{"packed"})
+
+(defn known-option? [[name _]]
+  (contains? known-options name))
+
+(defn packed-exists? [field-options]
+  (let [opts (insta/transform field-options-map field-options)]
+    (when-not (every? known-option? opts)
+      (throw-exception! (with-meta {:name "Options"} (meta field-options)) (format "Unknown option")))
+    (when 
+     (some (fn [[name value]] (and (= name "packed") value)) opts)
+     (throw-exception! (with-meta {:name "Options"} (meta field-options)) (format "[packed = true] can only be specified for repeated primitive fields.")))
+      ))
+
+(defn check-packed [field]
+  (if (= (second field) "repeated")
+    (when (>= (count field) 6)
+      (let [pe (packed-exists? (nth field 5))]
+        (when-not (primitive-type? (nth field 2))
+          (throw-exception! (with-meta {:name "Options"} (meta field)) (format "Unknown option")))))
+    (when (>= (count field) 5)
+      (packed-exists? (nth field 4)))
+      ))
+
 (defn check-message [message-name args global-types]
   (let [fields (second args)
         one-ofs (one-of-of fields)
         fields (concat one-ofs (second args))
         ]
+    (doseq [f (field-of :field fields)] (check-packed f))
     (check-types message-name fields global-types)
     (check-name-and-reserved-clash message-name fields) 
     (conj args :message)))
