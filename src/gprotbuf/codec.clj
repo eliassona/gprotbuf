@@ -1,15 +1,13 @@
-(comment 
   (ns gprotbuf.codec
     (:use [clojure.pprint])
     (:require [gprotbuf.core :refer [dbg]])
     (:import [com.google.protobuf CodedOutputStream CodedInputStream]
              [java.io ByteArrayInputStream ByteArrayOutputStream]))
 
-(defn decode-var-length [in]
-  (let [l (.readRawVarint64 in)]
-    (map (fn [_] (.readRawVarint64 in)) (range l))))
+(defn- decode-var-length [in]
+    (doall (map (fn [_] (.readRawVarint64 in)) (range (.readRawVarint64 in)))))
 
-(defn decode-value [in]
+(defn- decode-value [in]
   (let [tag-type (.readTag in)
         type (bit-and tag-type 7)
         tag (bit-shift-right tag-type 3)]
@@ -22,7 +20,7 @@
                5 (.readFixed32 in)
                )}]))
 
-(defn update-tag [m tag value]
+(defn- update-tag [m tag value]
   (let [v (get m tag)]
     (cond 
       (instance? java.util.List v)
@@ -33,7 +31,7 @@
       (assoc m tag [v value])
   )))
 
-(defn in-of [data] 
+(defn- in-of [data] 
   (CodedInputStream/newInstance 
     (ByteArrayInputStream. 
       (byte-array data))))
@@ -46,14 +44,11 @@
         (let [[tag value] (decode-value in)]
           (recur (update-tag m tag value)))))))
 
-(defn encode-var-length [out tag value]
-  (let [n (count value)]
-    (.writeRawVarint64 out n)
-    (doseq [v value] (.writeRawVarint64 out v))
-    )
-  )
+(defn- encode-var-length [out tag value]
+    (.writeRawVarint64 out (count value))
+    (doseq [v value] (.writeRawVarint64 out v)))
 
-(defn encode-value [out tag v]  
+(defn- encode-value [out tag v]  
   (let [type (:type v)
               value (:value v)]
     (condp = type
@@ -66,7 +61,7 @@
                    (encode-var-length out tag value))
                5 (.writeFixed32 out tag value))))
 
-(defn encode-entry [out e]
+(defn- encode-entry [out e]
   (let [tag (key e)
         v (val e)]
     (if (instance? java.util.List v)
@@ -84,4 +79,3 @@
 
 
 
-)
