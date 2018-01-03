@@ -67,10 +67,11 @@ mapField = <"map"> <"<"> optional-space keyType optional-space <","> optional-sp
 keyType = "int32" | "int64" | "uint32" | "uint64" | "sint32" | "sint64" |
           "fixed32" | "fixed64" | "sfixed32" | "sfixed64" | "bool" | "string"
           
-reserved = <"reserved"> space ( ranges | fieldNames ) optional-space <";">
+reserved = <"reserved"> space ( ranges | qfieldNames ) optional-space <";">
 ranges = range optional-space {optional-space <","> optional-space  range}
 range =  intLit [ space "to" space ( intLit | "max" ) ]
 fieldNames = fieldName optional-space { <","> optional-space fieldName optional-space }     
+qfieldNames = <'\"'> fieldName <'\"'> optional-space { <","> optional-space <'\"'> fieldName <'\"'> optional-space }     
 
 
 enum = <"enum"> space enumName optional-space enumBody

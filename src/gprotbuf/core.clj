@@ -118,7 +118,7 @@
 
 (defn check-reserved-clash [name args kw allow-alias]
   (let [nth-fn #(nth % 2)
-        reserved (field-of :reserved args)
+        reserved (filter (fn [[_ [x]]] (not= x :qfieldNames)) (field-of :reserved args))
         fields (field-of kw args)
         ranges (map-indexed (fn [i v] (conj v i)) (mapcat #(insta/transform (res->clj (meta %)) %) reserved))
         all-comb (for [x ranges
