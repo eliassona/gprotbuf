@@ -463,6 +463,28 @@ message SearchRequest {
       "Message1. \"unknownType\" is not defined." 4 11))
 
 
+(deftest verify-that-map-cannot-overlap
+    (failed-context-parse-block
+    "{
+       syntax=\"proto3\";
+       message Message1 {
+          string hej = 1;
+          map<string, string> hej = 2;
+       }
+     };
+     "      
+      "hej. \"hej\" is already defined in \"Message1\"." 4 11)
+    (failed-context-parse-block
+    "{
+       syntax=\"proto3\";
+       message Message1 {
+          string hej = 1;
+          map<string, string> aMap = 1;
+       }
+     };
+     "      
+      "Message1. Fields overlap." 5 11))
+
 (deftest verify-no-global-types
   (is (= #{} 
   (global-types-of

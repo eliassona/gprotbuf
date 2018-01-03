@@ -233,10 +233,16 @@
           (packed-exists? field-options)
           (throw-exception! (with-meta {:name "Options"} (meta field-options)) (format "[packed = true] can only be specified for repeated primitive fields.")))))))
 
+(defn map->field [f]
+  (if (= (first f) :mapField)
+    (let [[_ _ type name tag] f]
+      (with-meta [:field type name tag] (meta f)))
+    f))
+
 (defn check-message [message-name args global-types]
-  (let [fields (second args)
+  (let [fields (map map->field (second args))
         one-ofs (one-of-of fields)
-        fields (concat one-ofs (second args))
+        fields (concat one-ofs fields)
         ]
     (doseq [f (field-of :field fields)] (check-packed f))
     (check-types message-name fields global-types)
@@ -275,6 +281,8 @@
    :enum check-enum-values
    :enumBody (fn [& args] args)
    :proto (fn [& args] (check-name-and-reserved-clash "" (map second (filter #(= (first %) :topLevelDef) args))))
+   :keyType identity
+   :mapName identity
    })
 
 

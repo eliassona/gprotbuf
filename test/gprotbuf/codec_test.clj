@@ -16,8 +16,8 @@
   (verify-roundtrip {1 {:type 1, :value 255}}))
 
 
-(deftest test-type-2
-  (verify-roundtrip {1 {:type 2, :value "anders"}}))
+#_(deftest test-type-2
+   (verify-roundtrip {1 {:type 2, :value "anders"}}))
 
 
 (deftest test-type-5
