@@ -345,6 +345,18 @@ message SearchRequest {
 		};"))
 
 
+(deftest verify-that-allow-alias-work
+    (successful-parse-block 
+		"{ 
+		   syntax=\"proto3\";
+		   enum E1 {
+          option allow_alias = true;
+          V0 = 0;
+          V1 = 0;
+		   }
+		};"))
+
+
 (deftest verify-that-empty-enum-causes-error
     (failed-context-parse-block 
     "{

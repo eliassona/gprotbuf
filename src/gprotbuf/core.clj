@@ -2,9 +2,7 @@
   (:use [clojure.pprint])
   (:require [instaparse.core :as insta]
             [commentclean.core :as comment])
-  (:import #_[com.example.tutorial AddressBookProtos$Person AddressBookProtos$Person$PhoneNumber ASimpleTest$Udr]
-           #_[com.google.protobuf ByteString]
-           [gprotbuf.exception ParserException]))
+  (:import [gprotbuf.exception ParserException]))
 
 (defmacro dbg [body]
   `(let [x# ~body]
@@ -103,7 +101,7 @@
     (conj reserved tag-reserved-ranged zero-range)
     :enumField reserved))
 
-(defn check-field-tags! [name fields reserved]
+(defn check-field-tags! [name fields reserved allow-alias]
   (loop [reserved reserved
          fields fields
          ]
@@ -114,11 +112,11 @@
           (for [x (reserved-of reserved f)
                 y [tag]]
             [x y]))
-        (recur (conj reserved tag) (rest fields)))))) 
+        (recur (if allow-alias reserved (conj reserved tag)) (rest fields)))))) 
 
     
 
-(defn check-reserved-clash [name args kw]
+(defn check-reserved-clash [name args kw allow-alias]
   (let [nth-fn #(nth % 2)
         reserved (field-of :reserved args)
         fields (field-of kw args)
@@ -128,7 +126,7 @@
                           :when (not= (nth-fn x) (nth-fn y))]
                       [x y])]
     (check-reserved-overlap! name all-comb)
-    (check-field-tags! name fields ranges)))
+    (check-field-tags! name fields ranges allow-alias)))
 
 
 (def primitive-proto-types #{"double" "float" "int32" "int64" "uint32" "uint64" 
@@ -158,7 +156,7 @@
 
 (defn check-name-and-reserved-clash [name args]
   (check-name-clash name args)
-  (check-reserved-clash name args :field)
+  (check-reserved-clash name args :field false)
   args)
 
 (defn check-duplicates! [enum-name values the-fn]
@@ -190,9 +188,10 @@
     (when (empty? values) (throw-exception! (with-meta {:name name} m) "Enums must contain at least one value."))
     (when (not= (-> values first (nth 2)) 0) (throw-exception! (with-meta {:name name} (-> values first meta)) "The first enum value must be zero in proto3."))
     (check-duplicate-enum-names! enum-name values)
-    (when-not (opts "allow_alias") 
-     (check-duplicate-enum-values! enum-name values))
-    (check-reserved-clash name (second args) :enumField)
+    (let [allow-alias (opts "allow_alias")]
+      (when-not allow-alias 
+       (check-duplicate-enum-values! enum-name values))
+      (check-reserved-clash name (second args) :enumField allow-alias))
     [:enum name body]
   ))
 
@@ -324,36 +323,3 @@
 
 
 
-;;----------------------------------------------------------------------------------------------------------------------
-
-(comment
-(def b (AddressBookProtos$Person/newBuilder))
-(.setId b 12345)
-(.setName b "anders")
-(.setEmail b "anders@hej.com")
-(def p (.build b))
-(AddressBookProtos$Person/parseFrom (.toByteArray p))
-
-(do
-	(def b (ASimpleTest$Udr/newBuilder))
-	(.setBaField b (ByteString/copyFrom (byte-array [])))
-	(.setStrField b "")
-	(.setIntField b 1)
-  (.addAllIntList b [])
-  (.setSigned32 b 0)
-  (.addAllSigned64 b [])
-  (.setBoolField b false)
-  (.setFloatField b 0.0)
-  (.setDoubleField b 0.0)
-  (.setF32Field b 0)
-  (.setF64Field b 0)
-  (.setInt32 b 0)
-  (.setInt64 b 0)
-	(def p (.build b))
-  (vec (.toByteArray p))
-  
-  ;V2
-  [10 0 18 0 24 0 64 0 -96 1 0 -83 1 0 0 0 0 -79 1 0 0 0 0 0 0 0 0 -67 1 0 0 0 0 -63 1 0 0 0 0 0 0 0 0 -16 1 0 -8 1 0]
-  )
-
-)
