@@ -86,14 +86,15 @@
           r) :field) (meta f))))
 
 (defn name-and-value-of [f]
-  (condp = (first f)
-    :field 
-    (let [ix (if (= (second f) "repeated")
-               1 
-               0)]
-      [(nth f (+ 2 ix)) (nth f (+ 3 ix))])
-    :enumField [(nth f 1) (nth f 2)]
-    ))
+  (with-meta 
+    (condp = (first f)
+      :field 
+      (let [ix (if (= (second f) "repeated")
+                 1 
+                 0)]
+        [(nth f (+ 2 ix)) (nth f (+ 3 ix))])
+      :enumField [(nth f 1) (nth f 2)]
+      ) (meta f)))
 
 (defn reserved-of [reserved f]
   (condp = (first f)
@@ -114,11 +115,34 @@
             [x y]))
         (recur (if allow-alias reserved (conj reserved tag)) (rest fields)))))) 
 
-    
+
+(defn reserve-of [args the-fn]
+  (filter (fn [[_ [x]]] (the-fn x :qfieldNames)) (field-of :reserved args)))
+
+(defn contains-dup? [data]
+  (some #(> % 1) (vals (frequencies data))))
+
+(defn check-reserved-names-overlap! [name reserved-names]
+  (doseq [rn reserved-names]
+    (when (contains-dup? rn) (throw-exception! (with-meta {:name name} (meta rn)) "Fields overlap."))) 
+  (when (contains-dup? (flatten reserved-names))
+    (throw-exception! (with-meta {:name name} (meta (first reserved-names))) "Fields overlap."))
+  (flatten reserved-names))
+
+(defn check-field-names-overlap! [name fields reserved-names]
+  (let [reserved-names (into #{} (flatten reserved-names))]
+    (doseq [[f-name :as f] (map name-and-value-of fields)]
+      (when (contains? reserved-names f-name)
+        (throw-exception! (with-meta {:name name} (meta f)) "Fields overlap.")
+      )
+  )))
+
+
 
 (defn check-reserved-clash [name args kw allow-alias]
   (let [nth-fn #(nth % 2)
-        reserved (filter (fn [[_ [x]]] (not= x :qfieldNames)) (field-of :reserved args))
+        reserved (reserve-of args not=) 
+        reserved-names (map (fn [[_ [_ & args] :as v]] (with-meta args (meta v))) (reserve-of args =))
         fields (field-of kw args)
         ranges (map-indexed (fn [i v] (conj v i)) (mapcat #(insta/transform (res->clj (meta %)) %) reserved))
         all-comb (for [x ranges
@@ -126,7 +150,10 @@
                           :when (not= (nth-fn x) (nth-fn y))]
                       [x y])]
     (check-reserved-overlap! name all-comb)
-    (check-field-tags! name fields ranges allow-alias)))
+    (check-field-tags! name fields ranges allow-alias)
+    (check-reserved-names-overlap! name reserved-names)
+    (check-field-names-overlap! name fields reserved-names)
+    ))
 
 
 (def primitive-proto-types #{"double" "float" "int32" "int64" "uint32" "uint64" 

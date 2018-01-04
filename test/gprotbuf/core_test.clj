@@ -199,6 +199,22 @@ message SearchRequest {
          reserved 1;
        }
      };" "M1. Fields overlap." #_"Reserved range 1 to 1 overlaps with already-defined range 1 to 1." 5 10) ;TODO
+  
+  (failed-context-parse-block 
+    "{
+       syntax=\"proto3\";
+       message M1 {
+         reserved \"hej\";
+         reserved \"hej\";
+       }
+     };" "M1. Fields overlap." #_"Reserved range 1 to 1 overlaps with already-defined range 1 to 1." 4 10)
+  (failed-context-parse-block 
+    "{
+       syntax=\"proto3\";
+       message M1 {
+         reserved \"hej\", \"hej\";
+       }
+     };" "M1. Fields overlap." #_"Reserved range 1 to 1 overlaps with already-defined range 1 to 1." 4 10)
   )
 
 (deftest verify-that-reserved-cannot-overlap-2 
@@ -238,6 +254,14 @@ message SearchRequest {
          string str1 = 1000;
        }
      };" "M1. Fields overlap." #_"Field \"str1\" uses reserved number 1000." 5 10) ;TODO
+  (failed-context-parse-block 
+    "{
+       syntax=\"proto3\";
+       message M1 {
+         reserved \"hej\";
+         string hej = 1000;
+       }
+     };" "M1. Fields overlap." #_"Field \"str1\" uses reserved number 1000." 5 10)
   )
 
 (deftest verify-that-19000-to-19999-cannot-be-used
