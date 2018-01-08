@@ -280,6 +280,50 @@
   ;this is not well made
   (str (apply str (butlast t)) (-> t last second)))
 
+(defn map-field-type-of [mfn]
+  (apply conj mfn "_Message"))
+
+(defn map-field->message [key-type value-type name tag]
+  (let [name-type (map-field-type-of name)
+        m (meta name)]
+    (vary-meta 
+      (with-meta 
+        [:message
+         [:messageName name-type]
+         [:messageBody 
+          (with-meta 
+            [:field
+             [:type [:enumType [:enumName key-type]]]
+             [:fieldName [:ident "k" "e" "y"]]
+               [:fieldNumber [:intLit [:decimalLit "1"]]]] m)
+          (with-meta 
+            [:field
+             value-type
+             [:fieldName [:ident "v" "a" "l" "u" "e"]]
+               [:fieldNumber [:intLit [:decimalLit "2"]]]] m)]] m) 
+      assoc :map-field-name name, :map-field-tag tag)))
+
+(defn add-map-fields [args]
+  (loop [a args
+         res []]
+    (if (empty? a)
+      res
+      (recur
+        (rest a)
+        (let [v (first a)
+              m (meta v)]
+          (if-let [mfn (:map-field-name m)]
+            (conj res v (with-meta [:field "repeated" [:type [:enumType [:enumName (map-field-type-of mfn)]]] [:fieldName mfn] (:map-field-tag m)] m))
+            (conj res v)))))))
+
+
+(def ast-map-field->field-map
+  { 
+   :mapField map-field->message 
+   :mapName identity
+   :keyType identity
+   :messageBody (fn [& args] (with-meta `[:messageBody ~@(add-map-fields args)] (-> args first meta)))
+})
 
 (defn ast->clj-map [global-types] 
   {
@@ -307,10 +351,12 @@
    :optionName identity
    :enum check-enum-values
    :enumBody (fn [& args] args)
-   :proto (fn [& args] (check-name-and-reserved-clash "" (map second (filter #(= (first %) :topLevelDef) args))))
-   :keyType identity
-   :mapName identity
+   :proto (fn [& args] (check-name-and-reserved-clash "" (map second (filter #(= (first %) :topLevelDef) args))) args)
+;   :keyType identity
+;   :mapName identity
    })
+
+
 
 
 (def ast->names-map 
@@ -352,9 +398,10 @@
 
 
 (defn ast->clj [ast]
+  (let [ast (insta/transform ast-map-field->field-map ast)] ;make mapField into a regular sub message field and add field for it.
     (insta/transform
     (ast->clj-map (global-types-of ast))
-    ast))
+    ast)))
 
 
 

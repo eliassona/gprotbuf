@@ -507,7 +507,7 @@ message SearchRequest {
        }
      };
      "      
-      "Message1. Fields overlap." 5 11))
+      "Message1. Fields overlap." 5 31))
 
 (deftest verify-no-global-types
   (is (= #{} 
