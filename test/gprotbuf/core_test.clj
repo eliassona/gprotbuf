@@ -576,6 +576,68 @@ message SearchRequest {
   )
 
 
+(deftest verify-scope
+  (successful-parse-block 
+    "{
+          syntax=\"proto3\";
+          message M1 { 
+             message M2 { 
+               string str1 = 1; 
+             }
+          }
+          message M4 { 
+             M1.M2 f1 = 1;
+          }
+       };")
+  
+  (failed-context-parse-block 
+    "{
+          syntax=\"proto3\";
+          message M1 { 
+             message M2 { 
+               string str1 = 1; 
+             }
+          }
+          message M4 { 
+             M2 f1 = 1;
+          }
+       };" "M4. \"M2\" is not defined." 9 14)
+  (successful-parse-block 
+    "{
+          syntax=\"proto3\";
+          message M1 { 
+             message M2 { 
+               string str1 = 1; 
+             }
+             M2 f1 = 1;
+          }
+          message M4 { 
+             M1.M2 f1 = 1;
+          }
+       };")
+  )
+
+
+(deftest verify-that-error-position-is-correct-with-comments
+  (failed-context-parse-block 
+    "{
+          syntax=\"proto3\";
+          /*
+           * Bla
+           *
+           *
+           *
+           */
+          message M1 { 
+             message M2 { 
+               string str1 = 1; 
+             }
+          }
+          message M4 { 
+             M2 f1 = 1;
+          }
+       };" "M4. \"M2\" is not defined." 15 14)
+  )
 
 
 
