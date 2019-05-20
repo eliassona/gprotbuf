@@ -1,4 +1,4 @@
-(defproject gprotbuf "0.1.0-SNAPSHOT"
+(defproject gprotbuf "0.2.0-SNAPSHOT"
   :description "Google Protocol Buffer Parser"
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
