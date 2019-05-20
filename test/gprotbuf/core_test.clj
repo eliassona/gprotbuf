@@ -618,7 +618,7 @@ message SearchRequest {
   )
 
 
-(deftest verify-that-error-position-is-correct-with-comments
+(deftest verify-scope-1
   (failed-context-parse-block 
     "{
           syntax=\"proto3\";
@@ -638,6 +638,60 @@ message SearchRequest {
           }
        };" "M4. \"M2\" is not defined." 15 14)
   )
+
+
+(deftest verify-scope-2
+  (successful-parse-block 
+    "{
+      syntax=\"proto3\";
+      message SearchResponse {
+			  message Result {
+			    string url = 1;
+			    string title = 2;
+			    repeated string snippets = 3;
+			    message M2 {
+			        string f1 = 1;
+			    }
+			    M2 m2 = 4;
+			  }
+		  Result results = 1;
+		  SearchResponse.Result.M2 f2 = 2; 
+		}
+   };")
+  (successful-parse-block 
+    "{
+      syntax=\"proto3\";
+      message SearchResponse {
+			  message Result {
+			    string url = 1;
+			    string title = 2;
+			    repeated string snippets = 3;
+			    message M2 {
+			        string f1 = 1;
+			    }
+			    M2 m2 = 4;
+			  }
+		  Result results = 1;
+		  Result.M2 f2 = 2; 
+		}
+   };")
+  (failed-context-parse-block 
+    "{
+      syntax=\"proto3\";
+      message SearchResponse {
+			  message Result {
+			    string url = 1;
+			    string title = 2;
+			    repeated string snippets = 3;
+			    message M2 {
+			        string f1 = 1;
+			    }
+			    M2 m2 = 4;
+			  }
+		  Result results = 1;
+		  M2 f2 = 2; 
+		}
+   };" "SearchResponse. \"M2\" is not defined." 14 5))
 
 
 

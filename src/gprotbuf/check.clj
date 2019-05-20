@@ -2,10 +2,14 @@
   "Protocol buffers context check.
    This checker verifies that tags and names don't overlap etc.
    "
+(:use [clojure.pprint])  
 (:require [instaparse.core :as insta])
 (:import [gprotbuf.exception ParserException])
 )
-
+(defmacro dbg [body]
+  `(let [x# ~body]
+     (println "dbg:" '~body "=" x#)
+     x#))
 (defn name-of-label [l ds]
   (condp = l
     :field (nth ds (if (= (second ds) "repeated") 3 2))
@@ -157,8 +161,20 @@
     (contains? rel-types t)
     (contains? global-types t)))
 
+(declare rel-types-of)
+
+(defn sub-rel-types-of [args]
+  (let [name (second args)
+        sub-names (rel-types-of (nth args 2))]
+    (if (empty? sub-names)
+      name
+      (conj (map #(format "%s.%s" name %) sub-names) name))))
+
+(defn rel-types-of [args]
+    (into #{} (flatten (map sub-rel-types-of (filter #(contains? #{:enum :message} (first %)) args)))))
+
 (defn check-types [name args global-types]
-  (let [rel-types (into #{} (map second (filter #(contains? #{:enum :message} (first %)) args)))]
+  (let [rel-types (rel-types-of args)]
     (doseq [f (map remove-repeated (->> args (field-of :field)))]
       (let [t (second f)]
         (when-not (valid-type? t rel-types global-types)
