@@ -163,10 +163,12 @@
 
 (defn ast->clj [ast & properties]
   (let [prop-map (apply hash-map properties)
-        ast (insta/transform ast-map-field->field-map ast)] ;make mapField into a regular sub message field and add field for it.
-    (insta/transform
-    (ast->clj-map (global-types-of ast) prop-map)
-    ast)))
+        ast (insta/transform ast-map-field->field-map ast) ;make mapField into a regular sub message field and add field for it.
+        gt (global-types-of ast)]
+    (vary-meta 
+      (insta/transform
+      (ast->clj-map gt prop-map)
+      ast) assoc :global-types gt)))
 
 
 

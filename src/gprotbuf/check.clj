@@ -151,6 +151,8 @@
 
 (def proto-types (into #{} (concat primitive-proto-types complex-proto-types)))
 
+(defn proto-predef-type? [type]
+  (contains? proto-types type))
 
 (defn primitive-type? [type]
   (contains? primitive-proto-types type))
@@ -271,7 +273,7 @@
         fields (concat one-ofs fields)
         ]
     (doseq [f (field-of :field fields)] (check-packed f))
-    (check-types message-name fields global-types)
+  ;  (check-types message-name fields global-types)
     (check-name-and-reserved-clash message-name fields) 
     (conj args :message)))
 

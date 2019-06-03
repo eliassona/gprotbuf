@@ -1,6 +1,7 @@
 package gprotbuf;
 
 import java.util.Map;
+import java.util.Set;
 
 import clojure.java.api.Clojure;
 import clojure.lang.IFn;
@@ -9,6 +10,7 @@ import gprotbuf.exception.ParserException;
 
 public class GPBParser {
 	private static final String GPROTBUF_CORE = "gprotbuf.core";
+	private static final String GPROTBUF_CHECK = "gprotbuf.check";
 	private static final String CLOJURE_CORE = "clojure.core";
 	private static final String INSTAPARSE_CORE= "instaparse.core";
 	private final IFn require;
@@ -19,6 +21,7 @@ public class GPBParser {
 	private final IFn transform;
 	private final IFn parse;
 	private final IFn isPrimitiveType;
+	private final IFn isProtoPreDefType;
 	private final static GPBParser self = new GPBParser();
 	public static final GPBParser instance() {
 		return self;
@@ -32,7 +35,8 @@ public class GPBParser {
 		transform = Clojure.var(GPROTBUF_CORE, "ast->clj");
 		isFailure = Clojure.var(INSTAPARSE_CORE, "failure?");
 		isSyntax = Clojure.var(GPROTBUF_CORE, "syntax?");
-		isPrimitiveType = Clojure.var(GPROTBUF_CORE, "primitive-type?");
+		isPrimitiveType = Clojure.var(GPROTBUF_CHECK, "primitive-type?");
+		isProtoPreDefType = Clojure.var(GPROTBUF_CHECK, "proto-predef-type?");
 	}
 	
 	/**
@@ -57,6 +61,9 @@ public class GPBParser {
 		return (boolean) isPrimitiveType.invoke(type);
 	}
 	
+	public final boolean isProtoPreDefType(final String type) {
+		return (boolean) isProtoPreDefType.invoke(type);
+	}
 	
 	/**
 	 * Transform and clean the ast to produce a new ast that is a little easier to navigate.
@@ -100,12 +107,12 @@ public class GPBParser {
 	
 	public static class MetaInfo {
 
-		private final Map<Keyword, Long> node;
+		private final Map<Keyword, Object> node;
 
-		public MetaInfo(final Map<Keyword, Long> node) {
+		public MetaInfo(final Map<Keyword, Object> node) {
 			this.node = node;
 		}
-		public long indexOf(final String name) { return node.get(Keyword.intern("instaparse.gll", name)); }
+		public long indexOf(final String name) { return (long) node.get(Keyword.intern("instaparse.gll", name)); }
 		
 		public long startIndex() { return indexOf("start-index"); }
 		public long endIndex() { return indexOf("end-index"); }
@@ -113,6 +120,9 @@ public class GPBParser {
 		public long startColumn() { return indexOf("start-column"); }
 		public long endLine() { return indexOf("end-line"); }
 		public long endColumn() { return indexOf("end-column"); }
+		public Set<String> globalTypes() {
+			return (Set<String>) node.get(Keyword.intern(null, "global-types"));
+		}
 		@Override
 		public String toString() {
 			return node.toString();
@@ -126,7 +136,7 @@ public class GPBParser {
 	 * @return
 	 */
 	public MetaInfo metaInfoOf(final Object node) {
-		return new MetaInfo((Map<Keyword, Long>) meta.invoke(node));
+		return new MetaInfo((Map<Keyword, Object>) meta.invoke(node));
 	}
 
 	
